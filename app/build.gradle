@@ -1,0 +1,16 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.cloudemax18.k2001nelmhelper'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.cloudemax18.k2001nelmhelper'
+        minSdk 23
+        targetSdk 28
+        versionCode 1
+        versionName '1.0'
+    }
+}
