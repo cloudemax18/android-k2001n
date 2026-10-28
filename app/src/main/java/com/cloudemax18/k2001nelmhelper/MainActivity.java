@@ -80,6 +80,7 @@ public class MainActivity extends Activity {
         addButton(root, "4 · Probar conexión ELM327 (SPP)", v -> chooseAndConnect());
         addButton(root, "Enviar comando AT a ELM327", v -> sendAt());
         addButton(root, "Desconectar", v -> disconnect());
+        addButton(root, "Activar Gengar flotante (GPS + sensores)", v -> startGengar());
 
         output = new TextView(this);
         output.setTextSize(13);
@@ -96,6 +97,31 @@ public class MainActivity extends Activity {
         else registerReceiver(receiver, filter);
         updateStatus();
         append("Aplicación iniciada.");
+    }
+
+    private void startGengar() {
+        if (Build.VERSION.SDK_INT >= 23 && !android.provider.Settings.canDrawOverlays(this)) {
+            try {
+                Intent i = new Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    android.net.Uri.parse("package:" + getPackageName()));
+                startActivity(i);
+                append("Autoriza Mostrar sobre otras aplicaciones y vuelve a pulsar Gengar.");
+            } catch (Exception e) { append("No se pudieron abrir los permisos de superposición."); }
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= 23 && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 812);
+            return;
+        }
+        try {
+            Intent i = new Intent(this, GengarOverlayService.class);
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i); else startService(i);
+            append("Gengar flotante iniciado. Tócalo para cambiar tamaño y arrástralo para moverlo.");
+        } catch (Exception e) { append("No se pudo iniciar Gengar: " + e.getMessage()); }
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
     }
 
     private void addButton(LinearLayout root, String text, View.OnClickListener click) {
@@ -137,6 +163,11 @@ public class MainActivity extends Activity {
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == 812) {
+            boolean ok = results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED;
+            append(ok ? "Permiso GPS concedido; vuelve a pulsar Activar Gengar." : "El permiso GPS es necesario para estimar la velocidad.");
+            return;
+        }
         if (requestCode == REQ) {
             boolean ok = true;
             for (int r : results) if (r != PackageManager.PERMISSION_GRANTED) ok = false;
