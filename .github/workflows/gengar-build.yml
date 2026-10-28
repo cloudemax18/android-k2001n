@@ -20,11 +20,20 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Download official animated Gengar sprite
+        run: |
+          mkdir -p app/src/main/res/raw
+          curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' \
+            https://img.pokemondb.net/sprites/black-white/anim/normal/gengar.gif \
+            --output app/src/main/res/raw/gengar.gif
+          file app/src/main/res/raw/gengar.gif
       - name: Build debug APK
-        run: gradle --no-daemon assembleDebug
+        run: |
+          gradle --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Gengar-K2001N.apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: K2001N-Gengar-Floating-debug
-          path: app/build/outputs/apk/debug/*.apk
+          name: Gengar-K2001N
+          path: app/build/outputs/apk/debug/Gengar-K2001N.apk
           if-no-files-found: error
