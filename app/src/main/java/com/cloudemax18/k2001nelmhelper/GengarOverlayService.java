@@ -202,7 +202,12 @@ public class GengarOverlayService extends Service implements LocationListener, S
             }
             if (e.getAction() == MotionEvent.ACTION_UP) {
                 if (Math.abs(e.getRawX()-downX)<12 && Math.abs(e.getRawY()-downY)<12) {
-                    compact = !compact; requestLayout();
+                    if (System.currentTimeMillis() - downAt > 900L) {
+                        Toast.makeText(GengarOverlayService.this, "Gengar detenido", Toast.LENGTH_SHORT).show();
+                        stopSelf();
+                    } else {
+                        compact = !compact; requestLayout();
+                    }
                 }
                 return true;
             }
