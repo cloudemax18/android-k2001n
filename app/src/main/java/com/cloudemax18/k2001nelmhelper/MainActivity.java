@@ -24,16 +24,34 @@ public class MainActivity extends Activity {
         root.setPadding(24, 24, 24, 24);
         root.setBackgroundColor(0xFF171323);
 
-        Button start = new Button(this);
-        start.setText("Mostrar Gengar");
-        start.setTextSize(20);
-        start.setAllCaps(false);
-        start.setOnClickListener(v -> startGengar());
-        root.addView(start, new LinearLayout.LayoutParams(-1, -2));
+        Button title = new Button(this);
+        title.setText("Compañeros Pokémon");
+        title.setTextSize(22);
+        title.setAllCaps(false);
+        title.setEnabled(false);
+        root.addView(title, new LinearLayout.LayoutParams(-1, -2));
+
+        Button gengar = new Button(this);
+        gengar.setText("Mostrar Gengar");
+        gengar.setTextSize(19);
+        gengar.setAllCaps(false);
+        gengar.setOnClickListener(v -> startPokemon("gengar"));
+        LinearLayout.LayoutParams item = new LinearLayout.LayoutParams(-1, -2);
+        item.topMargin = 18;
+        root.addView(gengar, item);
+
+        Button blastoise = new Button(this);
+        blastoise.setText("Mostrar Blastoise");
+        blastoise.setTextSize(19);
+        blastoise.setAllCaps(false);
+        blastoise.setOnClickListener(v -> startPokemon("blastoise"));
+        LinearLayout.LayoutParams item2 = new LinearLayout.LayoutParams(-1, -2);
+        item2.topMargin = 10;
+        root.addView(blastoise, item2);
         setContentView(root);
     }
 
-    private void startGengar() {
+    private void startPokemon(String pokemon) {
         if (Build.VERSION.SDK_INT >= 23 && !Settings.canDrawOverlays(this)) {
             try {
                 Intent i = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -51,8 +69,9 @@ public class MainActivity extends Activity {
         }
         try {
             Intent i = new Intent(this, GengarOverlayService.class);
+            i.putExtra("pokemon", pokemon);
             if (Build.VERSION.SDK_INT >= 26) startForegroundService(i); else startService(i);
-            Toast.makeText(this, "Gengar está flotando. Arrástralo para moverlo; tócalo para cambiar tamaño.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Pokémon flotante iniciado. Arrástralo para moverlo; tócalo para cambiar tamaño.", Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             Toast.makeText(this, "No se pudo iniciar Gengar: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
@@ -64,7 +83,7 @@ public class MainActivity extends Activity {
             if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permiso concedido. Pulsa Mostrar Gengar otra vez.", Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(this, "El GPS necesita permiso de ubicación para estimar la velocidad.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "El GPS necesita permiso de ubicación para estimar la velocidad y reaccionar al movimiento.", Toast.LENGTH_LONG).show();
             }
         }
     }
