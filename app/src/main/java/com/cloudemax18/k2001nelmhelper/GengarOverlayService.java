@@ -44,12 +44,13 @@ public class GengarOverlayService extends Service implements LocationListener, S
     private long lastLocationTime = 0L, stoppedSince = 0L, lastBrakeTime = 0L, lastTurnTime = 0L;
     private float lastSpeed = -1f;
     private String state = "idle";
+    private String activePokemon = "gengar";
     private final Handler handler = new Handler();
     private final Random random = new Random();
     private final String[] phrases = new String[] {
-        "¡Has vuelto!", "¡Vamos de aventura!", "¡Aquí estoy!", "¡Gengar al volante!",
-        "¡Qué buen paseo!", "¡Boo! Je, je.", "¡Seguimos!", "¡Me gusta este camino!",
-        "¡Todo bajo control!", "¡A por todas!"
+        "¡Has vuelto!", "¡Vamos de aventura!", "¡Aquí estoy!", "¡Qué buen paseo!",
+        "¡Boo! Je, je.", "¡Seguimos!", "¡Me gusta este camino!",
+        "¡Todo bajo control!", "¡A por todas!", "¡Cañones listos!"
     };
     private final Runnable chatter = new Runnable() {
         @Override public void run() {
@@ -63,7 +64,7 @@ public class GengarOverlayService extends Service implements LocationListener, S
         createChannel();
         Notification.Builder nb = Build.VERSION.SDK_INT >= 26
             ? new Notification.Builder(this, CHANNEL) : new Notification.Builder(this);
-        Notification n = nb.setContentTitle("Gengar está flotando")
+        Notification n = nb.setContentTitle("Compañero Pokémon flotante")
             .setContentText("Compañero animado con reacciones al movimiento")
             .setSmallIcon(android.R.drawable.ic_menu_compass)
             .setOngoing(true).build();
@@ -120,12 +121,20 @@ public class GengarOverlayService extends Service implements LocationListener, S
 
     private void createChannel() {
         if (Build.VERSION.SDK_INT >= 26) {
-            NotificationChannel c = new NotificationChannel(CHANNEL, "Gengar conductor", NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel c = new NotificationChannel(CHANNEL, "Compañero Pokémon", NotificationManager.IMPORTANCE_LOW);
             ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(c);
         }
     }
 
-    @Override public int onStartCommand(Intent intent, int flags, int startId) { return START_STICKY; }
+    @Override public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null) {
+            String selected = intent.getStringExtra("pokemon");
+            if ("blastoise".equals(selected)) activePokemon = "blastoise";
+            else if ("gengar".equals(selected)) activePokemon = "gengar";
+            if (ghost != null) ghost.setPokemon(activePokemon);
+        }
+        return START_STICKY;
+    }
     @Override public IBinder onBind(Intent intent) { return null; }
 
     @Override public void onLocationChanged(Location loc) {
@@ -201,16 +210,20 @@ public class GengarOverlayService extends Service implements LocationListener, S
         private long downAt, bubbleUntil = 0L;
         private boolean compact = false;
         private String bubble = "";
-        private final Movie sprite;
+        private Movie sprite;
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         GhostView(Context c) {
             super(c);
-            Movie loaded;
-            try { loaded = Movie.decodeStream(getResources().openRawResource(R.raw.gengar)); }
-            catch (Exception e) { loaded = null; }
-            sprite = loaded;
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            setPokemon(activePokemon);
+        }
+
+        void setPokemon(String pokemon) {
+            int resource = "blastoise".equals(pokemon) ? R.raw.blastoise : R.raw.gengar;
+            try { sprite = Movie.decodeStream(getResources().openRawResource(resource)); }
+            catch (Exception e) { sprite = null; }
+            invalidate();
         }
 
         void showBubble(String text) {
@@ -277,7 +290,7 @@ public class GengarOverlayService extends Service implements LocationListener, S
                 if (Math.abs(e.getRawX()-downX)<12 && Math.abs(e.getRawY()-downY)<12) {
                     if (System.currentTimeMillis() - downAt > 900L) {
                         speak("¡Hasta luego!");
-                        Toast.makeText(GengarOverlayService.this, "Gengar detenido", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(GengarOverlayService.this, "Compañero detenido", Toast.LENGTH_SHORT).show();
                         stopSelf();
                     } else {
                         compact = !compact;
