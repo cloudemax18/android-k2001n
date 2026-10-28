@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Movie;
 import android.graphics.RectF;
 import android.hardware.Sensor;
@@ -21,14 +20,17 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 import java.util.Locale;
+import java.util.Random;
 
 public class GengarOverlayService extends Service implements LocationListener, SensorEventListener {
     private static final String CHANNEL = "gengar_drive_companion";
@@ -36,11 +38,25 @@ public class GengarOverlayService extends Service implements LocationListener, S
     private GhostView ghost;
     private LocationManager locationManager;
     private SensorManager sensorManager;
-    private float speedKmh = 0f, lastAccel = 0f;
-    private long lastLocationTime = 0L, stoppedSince = 0L, lastBrakeTime = 0L;
+    private TextToSpeech tts;
+    private boolean ttsReady = false;
+    private float speedKmh = 0f, lastAccel = 0f, lateralAccel = 0f;
+    private long lastLocationTime = 0L, stoppedSince = 0L, lastBrakeTime = 0L, lastTurnTime = 0L;
     private float lastSpeed = -1f;
-    private String state = "Esperando GPS";
-    private boolean parked = false;
+    private String state = "idle";
+    private final Handler handler = new Handler();
+    private final Random random = new Random();
+    private final String[] phrases = new String[] {
+        "¡Has vuelto!", "¡Vamos de aventura!", "¡Aquí estoy!", "¡Gengar al volante!",
+        "¡Qué buen paseo!", "¡Boo! Je, je.", "¡Seguimos!", "¡Me gusta este camino!",
+        "¡Todo bajo control!", "¡A por todas!"
+    };
+    private final Runnable chatter = new Runnable() {
+        @Override public void run() {
+            if (ttsReady && ghost != null) speak(phrases[random.nextInt(phrases.length)]);
+            handler.postDelayed(this, 45000L + random.nextInt(45000));
+        }
+    };
 
     @Override public void onCreate() {
         super.onCreate();
@@ -48,7 +64,7 @@ public class GengarOverlayService extends Service implements LocationListener, S
         Notification.Builder nb = Build.VERSION.SDK_INT >= 26
             ? new Notification.Builder(this, CHANNEL) : new Notification.Builder(this);
         Notification n = nb.setContentTitle("Gengar está flotando")
-            .setContentText("Observando velocidad y movimiento del vehículo")
+            .setContentText("Compañero animado con reacciones al movimiento")
             .setSmallIcon(android.R.drawable.ic_menu_compass)
             .setOngoing(true).build();
         startForeground(42, n);
@@ -65,19 +81,41 @@ public class GengarOverlayService extends Service implements LocationListener, S
         try { windowManager.addView(ghost, lp); }
         catch (Exception e) { Toast.makeText(this, "No se pudo mostrar la superposición", Toast.LENGTH_LONG).show(); stopSelf(); return; }
 
+        tts = new TextToSpeech(getApplicationContext(), status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                int result = tts.setLanguage(new Locale("es", "ES"));
+                ttsReady = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED;
+                if (ttsReady) {
+                    speak("¡Hola!");
+                    handler.postDelayed(() -> { if (ttsReady && ghost != null) speak("¡Has vuelto!"); }, 4500L);
+                    handler.postDelayed(chatter, 60000L);
+                }
+            }
+        });
+
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         Sensor accel = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         if (accel == null) accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (accel != null) sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_UI);
+        Sensor rotation = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        if (rotation != null) sensorManager.registerListener(this, rotation, SensorManager.SENSOR_DELAY_UI);
         try {
             if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 0f, this);
                 Location last = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 if (last != null) onLocationChanged(last);
-            } else state = "Falta permiso GPS";
-        } catch (Exception e) { state = "GPS no disponible"; }
+            } else state = "idle";
+        } catch (Exception e) { state = "idle"; }
         ghost.invalidate();
+    }
+
+    private void speak(String phrase) {
+        if (tts != null && ttsReady) {
+            if (Build.VERSION.SDK_INT >= 21) tts.speak(phrase, TextToSpeech.QUEUE_FLUSH, null, "gengar-" + System.currentTimeMillis());
+            else tts.speak(phrase, TextToSpeech.QUEUE_FLUSH, null);
+            if (ghost != null) ghost.showBubble(phrase);
+        }
     }
 
     private void createChannel() {
@@ -94,33 +132,55 @@ public class GengarOverlayService extends Service implements LocationListener, S
         long now = System.currentTimeMillis();
         float newSpeed = loc.hasSpeed() ? loc.getSpeed() * 3.6f : 0f;
         if (lastLocationTime > 0 && now > lastLocationTime) {
-            float decel = (lastSpeed - newSpeed) / ((now - lastLocationTime) / 1000f);
-            if (lastSpeed >= 12f && decel > 2.2f) lastBrakeTime = now;
+            float dt = (now - lastLocationTime) / 1000f;
+            float decel = (lastSpeed - newSpeed) / dt;
+            if (lastSpeed >= 12f && decel > 2.2f) {
+                lastBrakeTime = now;
+                state = "braking";
+            } else if (Math.abs(newSpeed - lastSpeed) > 7f) {
+                state = "boost";
+            }
         }
         speedKmh = newSpeed;
         lastSpeed = newSpeed;
         lastLocationTime = now;
-        if (speedKmh < 2.0f) {
+        if (speedKmh < 2f) {
             if (stoppedSince == 0) stoppedSince = now;
-            parked = now - stoppedSince > 120000L;
-            state = parked ? "Parado · posible estacionado" : "Detenido";
+            if (!"braking".equals(state)) state = "idle";
         } else {
             stoppedSince = 0;
-            parked = false;
-            state = now - lastBrakeTime < 2500L ? "Frenada detectada" : "En movimiento";
+            if (now - lastBrakeTime < 2200L) state = "braking";
+            else if (!"turning".equals(state) || now - lastTurnTime > 1800L) state = "moving";
         }
         if (ghost != null) ghost.invalidate();
     }
-    @Override public void onProviderEnabled(String provider) { state = "GPS activo"; if (ghost != null) ghost.invalidate(); }
-    @Override public void onProviderDisabled(String provider) { state = "Activa ubicación GPS"; if (ghost != null) ghost.invalidate(); }
+    @Override public void onProviderEnabled(String provider) { if (ghost != null) ghost.invalidate(); }
+    @Override public void onProviderDisabled(String provider) { state = "idle"; if (ghost != null) ghost.invalidate(); }
     @Override public void onStatusChanged(String provider, int status, Bundle extras) {}
+
     @Override public void onSensorChanged(SensorEvent e) {
-        if (e.values.length >= 3) {
-            float mag = (float)Math.sqrt(e.values[0]*e.values[0] + e.values[1]*e.values[1] + e.values[2]*e.values[2]);
+        long now = System.currentTimeMillis();
+        if (e.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+            float[] matrix = new float[9];
+            SensorManager.getRotationMatrixFromVector(matrix, e.values);
+            float[] orientation = new float[3];
+            SensorManager.getOrientation(matrix, orientation);
+            lateralAccel = (float)Math.toDegrees(orientation[2]);
+            if (Math.abs(lateralAccel) > 22f && speedKmh > 8f) {
+                state = "turning";
+                lastTurnTime = now;
+            }
+        } else if (e.values.length >= 3) {
+            float x=e.values[0], y=e.values[1], z=e.values[2];
+            float mag = (float)Math.sqrt(x*x + y*y + z*z);
+            lastAccel = mag;
             if (e.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-                if (speedKmh > 8 && mag > 2.5f) lastBrakeTime = System.currentTimeMillis();
-            } else {
-                lastAccel = mag;
+                if (speedKmh > 8f && mag > 2.5f) {
+                    state = "braking";
+                    lastBrakeTime = now;
+                } else if (speedKmh > 8f && mag > 1.5f) {
+                    state = "boost";
+                }
             }
         }
         if (ghost != null) ghost.invalidate();
@@ -128,17 +188,21 @@ public class GengarOverlayService extends Service implements LocationListener, S
     @Override public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     @Override public void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
         try { if (locationManager != null) locationManager.removeUpdates(this); } catch (Exception ignored) {}
         try { if (sensorManager != null) sensorManager.unregisterListener(this); } catch (Exception ignored) {}
         try { if (ghost != null && windowManager != null) windowManager.removeView(ghost); } catch (Exception ignored) {}
+        try { if (tts != null) { tts.stop(); tts.shutdown(); } } catch (Exception ignored) {}
         super.onDestroy();
     }
 
     private class GhostView extends View {
         private float downX, downY, startX, startY;
-        private long downAt;
+        private long downAt, bubbleUntil = 0L;
         private boolean compact = false;
+        private String bubble = "";
         private final Movie sprite;
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         GhostView(Context c) {
             super(c);
@@ -149,28 +213,53 @@ public class GengarOverlayService extends Service implements LocationListener, S
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
 
+        void showBubble(String text) {
+            bubble = text;
+            bubbleUntil = System.currentTimeMillis() + 3200L;
+            invalidate();
+        }
+
         @Override protected void onMeasure(int w, int h) {
-            setMeasuredDimension(compact ? 104 : 160, compact ? 94 : 146);
+            setMeasuredDimension(compact ? 142 : 220, compact ? 128 : 198);
         }
 
         @Override protected void onDraw(Canvas c) {
             super.onDraw(c);
-            if (sprite == null) return;
-            float w = getWidth(), h = getHeight();
             long now = System.currentTimeMillis();
-            float bob = (float)Math.sin(now / (state.contains("Movimiento") ? 160.0 : 320.0)) * 4f;
-            if (state.contains("Frenada")) bob -= 5f;
-            int duration = Math.max(1, sprite.duration());
-            sprite.setTime((int)(now % duration));
-            float scale = Math.min((w - 8f) / sprite.width(), (h - 8f) / sprite.height());
-            float dw = sprite.width() * scale;
-            float dh = sprite.height() * scale;
-            c.save();
-            c.translate((w - dw) / 2f, (h - dh) / 2f + bob);
-            c.scale(scale, scale);
-            sprite.draw(c, 0, 0);
-            c.restore();
-            postInvalidateDelayed(50);
+            float w = getWidth(), h = getHeight();
+            float bob = (float)Math.sin(now / ("moving".equals(state) ? 115.0 : 260.0)) * ("moving".equals(state) ? 8f : 4f);
+            float shakeX = 0f, tilt = 0f, scaleBoost = 1f;
+            if ("braking".equals(state)) { shakeX = (float)Math.sin(now / 24.0) * 7f; tilt = -7f; }
+            else if ("turning".equals(state)) { shakeX = (float)Math.sin(now / 90.0) * 8f; tilt = (float)Math.sin(now / 150.0) * 8f; }
+            else if ("boost".equals(state)) { scaleBoost = 1.10f + (float)Math.sin(now / 55.0) * 0.035f; bob -= 5f; }
+            else if ("moving".equals(state)) { scaleBoost = 1f + (float)Math.sin(now / 180.0) * 0.025f; }
+
+            if (sprite != null) {
+                int duration = Math.max(1, sprite.duration());
+                sprite.setTime((int)(now % duration));
+                float availW = w - 12f, availH = h - (now < bubbleUntil ? 42f : 8f);
+                float scale = Math.min(availW / sprite.width(), availH / sprite.height()) * scaleBoost;
+                float dw = sprite.width() * scale, dh = sprite.height() * scale;
+                c.save();
+                c.translate((w - dw) / 2f + shakeX, (h - dh) / 2f + bob + (now < bubbleUntil ? 14f : 0f));
+                c.rotate(tilt, dw / 2f, dh / 2f);
+                c.scale(scale, scale);
+                sprite.draw(c, 0, 0);
+                c.restore();
+            }
+            if (now < bubbleUntil && bubble.length() > 0) {
+                paint.setColor(0xEEFFFFFF);
+                RectF r = new RectF(4f, 3f, w - 4f, 37f);
+                c.drawRoundRect(r, 16f, 16f, paint);
+                paint.setColor(0xFF281B3C);
+                paint.setTextAlign(Paint.Align.CENTER);
+                paint.setTextSize(13f);
+                paint.setFakeBoldText(true);
+                String shown = bubble.length() > 27 ? bubble.substring(0, 25) + "…" : bubble;
+                c.drawText(shown, w / 2f, 25f, paint);
+                paint.setFakeBoldText(false);
+            }
+            postInvalidateDelayed(40);
         }
 
         @Override public boolean onTouchEvent(MotionEvent e) {
@@ -187,11 +276,14 @@ public class GengarOverlayService extends Service implements LocationListener, S
             if (e.getAction() == MotionEvent.ACTION_UP) {
                 if (Math.abs(e.getRawX()-downX)<12 && Math.abs(e.getRawY()-downY)<12) {
                     if (System.currentTimeMillis() - downAt > 900L) {
+                        speak("¡Hasta luego!");
                         Toast.makeText(GengarOverlayService.this, "Gengar detenido", Toast.LENGTH_SHORT).show();
                         stopSelf();
                     } else {
                         compact = !compact;
                         requestLayout();
+                        showBubble(compact ? "¡Modo pequeño!" : "¡Aquí estoy!");
+                        if (!compact && ttsReady) speak("¡Aquí estoy!");
                     }
                 }
                 return true;
