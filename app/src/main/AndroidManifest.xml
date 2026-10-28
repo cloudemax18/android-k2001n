@@ -13,7 +13,7 @@
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
     <application
         android:theme="@android:style/Theme.Material.Light.NoActionBar"
-        android:label="Gengar"
+        android:label="Pokémon Compañeros"
         android:allowBackup="false"
         android:supportsRtl="true">
         <service
