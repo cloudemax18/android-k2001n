@@ -44,8 +44,9 @@ public class GengarOverlayService extends Service implements LocationListener, S
     @Override public void onCreate() {
         super.onCreate();
         createChannel();
-        Notification n = new Notification.Builder(this, CHANNEL)
-            .setContentTitle("Gengar está flotando")
+        Notification.Builder nb = Build.VERSION.SDK_INT >= 26
+            ? new Notification.Builder(this, CHANNEL) : new Notification.Builder(this);
+        Notification n = nb.setContentTitle("Gengar está flotando")
             .setContentText("Observando velocidad y movimiento del vehículo")
             .setSmallIcon(android.R.drawable.ic_menu_compass)
             .setOngoing(true).build();
