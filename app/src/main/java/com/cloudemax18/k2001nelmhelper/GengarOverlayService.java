@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Movie;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -134,61 +135,44 @@ public class GengarOverlayService extends Service implements LocationListener, S
     }
 
     private class GhostView extends View {
-        private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
         private float downX, downY, startX, startY;
         private long downAt;
         private boolean compact = false;
-        private final int purple = Color.rgb(117, 54, 183);
-        GhostView(Context c) { super(c); setLayerType(View.LAYER_TYPE_SOFTWARE, null); }
-        @Override protected void onMeasure(int w, int h) { setMeasuredDimension(compact ? 104 : 156, compact ? 100 : 166); }
+        private final Movie sprite;
+
+        GhostView(Context c) {
+            super(c);
+            Movie loaded;
+            try { loaded = Movie.decodeStream(getResources().openRawResource(R.raw.gengar)); }
+            catch (Exception e) { loaded = null; }
+            sprite = loaded;
+            setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        }
+
+        @Override protected void onMeasure(int w, int h) {
+            setMeasuredDimension(compact ? 104 : 160, compact ? 94 : 146);
+        }
+
         @Override protected void onDraw(Canvas c) {
             super.onDraw(c);
+            if (sprite == null) return;
             float w = getWidth(), h = getHeight();
-            long t = System.currentTimeMillis();
-            float bob = (float)Math.sin(t / (state.contains("Movimiento") ? 160.0 : 320.0)) * 5f;
-            if (state.contains("Frenada")) bob -= 7;
-            c.save(); c.translate(0, bob);
-            // Sombra flotante
-            p.setColor(0x55301848); p.setStyle(Paint.Style.FILL);
-            c.drawOval(new RectF(w*.24f,h*.79f,w*.78f,h*.88f),p);
-            // Cuerpo fantasma con puntas y silueta original dibujada en Canvas
-            Path body = new Path();
-            body.moveTo(w*.20f,h*.67f); body.lineTo(w*.12f,h*.48f); body.lineTo(w*.23f,h*.42f);
-            body.lineTo(w*.17f,h*.25f); body.lineTo(w*.36f,h*.31f); body.lineTo(w*.49f,h*.15f);
-            body.lineTo(w*.61f,h*.30f); body.lineTo(w*.80f,h*.22f); body.lineTo(w*.75f,h*.43f);
-            body.lineTo(w*.88f,h*.49f); body.lineTo(w*.78f,h*.68f); body.lineTo(w*.70f,h*.77f);
-            body.lineTo(w*.57f,h*.72f); body.lineTo(w*.47f,h*.82f); body.lineTo(w*.37f,h*.73f);
-            body.lineTo(w*.25f,h*.78f); body.close();
-            p.setColor(purple); p.setStyle(Paint.Style.FILL); c.drawPath(body,p);
-            p.setStyle(Paint.Style.STROKE); p.setStrokeWidth(2.4f); p.setColor(0xFF47216F); c.drawPath(body,p);
-            p.setStyle(Paint.Style.FILL);
-            // Eyes react to braking
-            p.setColor(Color.WHITE);
-            if (state.contains("Frenada")) {
-                c.drawOval(new RectF(w*.30f,h*.39f,w*.45f,h*.54f),p);
-                c.drawOval(new RectF(w*.56f,h*.39f,w*.71f,h*.54f),p);
-            } else {
-                c.drawOval(new RectF(w*.31f,h*.40f,w*.45f,h*.52f),p);
-                c.drawOval(new RectF(w*.56f,h*.40f,w*.70f,h*.52f),p);
-            }
-            p.setColor(0xFF171026);
-            c.drawOval(new RectF(w*.35f,h*.42f,w*.42f,h*.51f),p);
-            c.drawOval(new RectF(w*.60f,h*.42f,w*.67f,h*.51f),p);
-            // Grin
-            p.setColor(0xFF24102F); c.drawRoundRect(new RectF(w*.31f,h*.55f,w*.70f,h*.67f),8,8,p);
-            p.setColor(0xFFFFE6F4);
-            Path teeth = new Path(); teeth.moveTo(w*.34f,h*.56f); teeth.lineTo(w*.43f,h*.56f); teeth.lineTo(w*.39f,h*.61f);
-            teeth.lineTo(w*.50f,h*.56f); teeth.lineTo(w*.58f,h*.56f); teeth.lineTo(w*.55f,h*.61f); teeth.lineTo(w*.67f,h*.56f);
-            teeth.lineTo(w*.63f,h*.64f); teeth.lineTo(w*.38f,h*.64f); teeth.close(); c.drawPath(teeth,p);
+            long now = System.currentTimeMillis();
+            float bob = (float)Math.sin(now / (state.contains("Movimiento") ? 160.0 : 320.0)) * 4f;
+            if (state.contains("Frenada")) bob -= 5f;
+            int duration = Math.max(1, sprite.duration());
+            sprite.setTime((int)(now % duration));
+            float scale = Math.min((w - 8f) / sprite.width(), (h - 8f) / sprite.height());
+            float dw = sprite.width() * scale;
+            float dh = sprite.height() * scale;
+            c.save();
+            c.translate((w - dw) / 2f, (h - dh) / 2f + bob);
+            c.scale(scale, scale);
+            sprite.draw(c, 0, 0);
             c.restore();
-            // Speed chip
-            p.setStyle(Paint.Style.FILL); p.setColor(0xDD171323); c.drawRoundRect(new RectF(4,h-27,w-4,h-3),12,12,p);
-            p.setColor(Color.WHITE); p.setTextSize(11f); p.setTypeface(android.graphics.Typeface.create("sans-serif-medium",0));
-            String label = String.format(Locale.getDefault(), "%.0f km/h · %s", speedKmh, state);
-            if (label.length() > 22) label = String.format(Locale.getDefault(), "%.0f km/h · %s", speedKmh, state.contains("Frenada") ? "FRENADA" : (parked ? "PARADO" : (speedKmh < 2 ? "DETENIDO" : "MOVIENDO")));
-            c.drawText(label, 10, h-11, p);
-            postInvalidateDelayed(80);
+            postInvalidateDelayed(50);
         }
+
         @Override public boolean onTouchEvent(MotionEvent e) {
             WindowManager.LayoutParams lp = (WindowManager.LayoutParams)getLayoutParams();
             if (e.getAction() == MotionEvent.ACTION_DOWN) {
@@ -206,7 +190,8 @@ public class GengarOverlayService extends Service implements LocationListener, S
                         Toast.makeText(GengarOverlayService.this, "Gengar detenido", Toast.LENGTH_SHORT).show();
                         stopSelf();
                     } else {
-                        compact = !compact; requestLayout();
+                        compact = !compact;
+                        requestLayout();
                     }
                 }
                 return true;
