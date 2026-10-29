@@ -14,15 +14,15 @@ import java.util.Locale
 import kotlin.random.Random
 
 /**
- * Provisional vector characters. Replace these drawing functions with Gemini PNG/sprite assets
- * once the designer delivers the transparent sprite sheets.
+ * Personajes vectoriales provisionales dibujados directamente en la aplicación.
+ * Todos los diálogos visibles para el usuario deben estar en español.
  */
 class AvatarView(context: Context) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val phrases = listOf(
         "¡Hola, compañero!", "¡Vaya, vaya!", "¡En marcha!", "Lo he visto todo…",
         "¡Qué aventura!", "¡Soy increíble!", "¡Cuidado, fantasma!",
-        "¿Un cafecito?", "¡Abracadabra!", "¡Ahora vuelvo!"
+        "¿Un cafecito?", "¡Abracadabra!", "¡Ahora vuelvo!",
         "¡Qué buen día!", "¡No tengo miedo!", "¿Rodamos, jefe?",
         "¡Buenos días!", "¡Buenas tardes!", "¡Buenas noches!",
         "¡Qué susto!", "¡Estoy de buen humor!", "¡Hora de una siesta!",
