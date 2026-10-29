@@ -34,19 +34,21 @@ class AvatarOverlayService : Service() {
         }
         params = layout
         view.onWindowPositionRequested = { nx, ny ->
-            val wm = windowManager ?: return@onWindowPositionRequested
-            val lp = params ?: return@onWindowPositionRequested
-            val metrics = DisplayMetrics()
-            @Suppress("DEPRECATION")
-            wm.defaultDisplay.getRealMetrics(metrics)
-            val maxX = (metrics.widthPixels - lp.width).coerceAtLeast(0)
-            val maxY = (metrics.heightPixels - lp.height).coerceAtLeast(0)
-            val targetX = (nx * metrics.widthPixels).toInt().coerceIn(0, maxX)
-            val targetY = (ny * metrics.heightPixels).toInt().coerceIn(0, maxY)
-            if (kotlin.math.abs(lp.x - targetX) > 2 || kotlin.math.abs(lp.y - targetY) > 2) {
-                lp.x = targetX
-                lp.y = targetY
-                try { wm.updateViewLayout(view, lp) } catch (_: Exception) { }
+            val wm = windowManager
+            val lp = params
+            if (wm != null && lp != null) {
+                val metrics = DisplayMetrics()
+                @Suppress("DEPRECATION")
+                wm.defaultDisplay.getRealMetrics(metrics)
+                val maxX = (metrics.widthPixels - lp.width).coerceAtLeast(0)
+                val maxY = (metrics.heightPixels - lp.height).coerceAtLeast(0)
+                val targetX = (nx * metrics.widthPixels).toInt().coerceIn(0, maxX)
+                val targetY = (ny * metrics.heightPixels).toInt().coerceIn(0, maxY)
+                if (kotlin.math.abs(lp.x - targetX) > 2 || kotlin.math.abs(lp.y - targetY) > 2) {
+                    lp.x = targetX
+                    lp.y = targetY
+                    try { wm.updateViewLayout(view, lp) } catch (_: Exception) { }
+                }
             }
         }
         try {
