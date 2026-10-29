@@ -1,0 +1,45 @@
+name: Build Phantom Companions APK
+on:
+  push:
+    branches: [gengar-floating-companion]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Prepare legacy animation resources until migration is complete
+        run: |
+          mkdir -p app/src/main/res/raw
+          curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' https://img.pokemondb.net/sprites/black-white/anim/normal/gengar.gif --output app/src/main/res/raw/gengar.gif
+          curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' https://img.pokemondb.net/sprites/black-white/anim/normal/blastoise.gif --output app/src/main/res/raw/blastoise.gif
+          if ! curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' --referer 'https://www.spriters-resource.com/ds_dsi/pokemonranger2shadowsofalmia/asset/20008/' 'https://www.spriters-resource.com/media/assets/18/20008.png?updated=1755472534' --output app/src/main/res/raw/gengar_ranger2.png; then
+            rm -f app/src/main/res/raw/gengar_ranger2.png
+            if ! curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' 'https://wsrv.nl/?url=www.spriters-resource.com%2Fmedia%2Fassets%2F18%2F20008.png%3Fupdated%3D1755472534' --output app/src/main/res/raw/gengar_ranger2.png; then
+              rm -f app/src/main/res/raw/gengar_ranger2.png
+              echo '::warning::Sprite sheet host blocked automated download; Gengar GIF fallback will be used.'
+            fi
+          fi
+          if [ -f app/src/main/res/raw/gengar_ranger2.png ]; then file app/src/main/res/raw/gengar_ranger2.png; fi
+      - name: Build debug APK
+        run: |
+          gradle --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Phantom-Companions.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Phantom-Companions
+          path: app/build/outputs/apk/debug/Phantom-Companions.apk
+          if-no-files-found: error
