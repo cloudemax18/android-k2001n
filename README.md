@@ -1,30 +1,32 @@
 # Avatares flotantes K2001N
 
-Aplicación Android nativa experimental con dos personajes flotantes para radios de automóvil Android K2001N: **el Segador** y **el Fantasma**. El proyecto lo desarrollamos directamente en el repositorio; no depende de Gemini ni de otro diseñador externo.
+Aplicación Android nativa experimental con dos personajes flotantes para radios Android K2001N: **el Segador** y **el Fantasma**. El desarrollo se realiza directamente en este repositorio, sin depender de Gemini.
 
-## Estado real del proyecto
+## Recursos gráficos
 
-- App Android inicial y flujo de compilación de APK de depuración.
-- El Segador vectorial se está ajustando para conservar los rasgos de la referencia: capucha negra, calavera clara, taza con corazón y vapor, guadaña y libro flotante.
-- El Fantasma provisional tiene cuerpo blanco y gafas oscuras.
-- Las frases y reacciones implementadas están en español.
-- Los dibujos actuales son vectores provisionales de Android, no todavía sprites PNG finales ni animaciones de producción.
-- GPS, velocidad real, sensores del vehículo, desplazamiento por toda la pantalla y compatibilidad con el firmware de la radio requieren implementación y pruebas adicionales.
+- Los recursos principales WebP están versionados como texto Base64 en `assets/sprites_base64/` para poder almacenarlos mediante la API de contenido de GitHub.
+- El flujo de GitHub Actions los reconstruye como `reaper_main.webp` y `ghost_main.webp` dentro de `app/src/main/res/drawable-nodpi/` antes de compilar.
+- `AvatarView.kt` carga esos recursos y conserva dibujos vectoriales de respaldo.
+- Los sprites de expresiones, efectos y vehículos están parcialmente preparados como paquete de trabajo, pero el atlas de animación todavía no está integrado en la compilación.
 
-## Compilar el APK
+## Compilar y descargar la APK
 
 1. Abre **Actions** en GitHub.
 2. Selecciona **Build floating avatars APK**.
-3. Pulsa **Run workflow** si no hay una ejecución reciente.
-4. Cuando termine correctamente, descarga el artefacto **floating-avatars-debug-apk**.
+3. Espera a que la ejecución termine correctamente.
+4. Descarga el artefacto `floating-avatars-debug-apk`.
 
-La compilación de depuración no es un lanzamiento firmado para Play Store. No se debe dar por compilada hasta que una ejecución de GitHub Actions termine correctamente.
+La APK es de depuración, no una versión de lanzamiento firmada. Una compilación correcta no sustituye la prueba en la radio real.
+
+## Estado y limitaciones
+
+- Todos los textos visibles de la app deben estar en español.
+- Los recursos principales están integrados en el flujo de compilación; el parecido final debe comprobarse visualmente en la radio.
+- El atlas completo, animaciones de vehículos, movimiento por toda la pantalla, GPS y sensores todavía necesitan integración y pruebas.
+- La compatibilidad con el firmware de la radio K2001N no se considera verificada hasta instalar y probar la APK en el dispositivo.
 
 ## Documentación
 
 - [Plan de recursos gráficos e integración](docs/ASSET_IMPLEMENTATION.md)
-- [Solicitud de cambios en curso](https://github.com/cloudemax18/android-k2001n/pull/3)
-
-## Objetivo de diseño
-
-Los personajes deben flotar sin bloquear los controles de la radio, reaccionar a los toques, mostrar frases cortas en español y usar animaciones suaves. GPS y sensores solo se incorporarán cuando puedan leerse con permisos disponibles y comprobarse en el dispositivo; no se deben simular como datos reales.
+- [Guía de sprites](docs/SPRITE_INTEGRATION.md)
+- [Solicitud de cambios](https://github.com/cloudemax18/android-k2001n/pull/3)
