@@ -75,25 +75,124 @@ class AvatarView(context: Context) : View(context) {
     private fun drawReaper(c: Canvas, x: Float, y: Float, r: Float, night: Boolean) {
         c.save()
         c.translate(x, y)
-        // Hood silhouette
-        paint.color = Color.BLACK
+
         paint.style = Paint.Style.FILL
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.strokeJoin = Paint.Join.ROUND
+
+        // Guadaña: mango oscuro detrás de la capucha y hoja plateada curva.
+        paint.color = Color.rgb(28, 28, 31)
+        paint.strokeWidth = r * 0.12f
+        c.drawLine(-r * 0.78f, r * 1.18f, r * 0.72f, -r * 1.65f, paint)
+        paint.color = Color.rgb(176, 180, 187)
+        paint.strokeWidth = r * 0.035f
+        val blade = Path().apply {
+            moveTo(r * 0.55f, -r * 1.34f)
+            cubicTo(r * 0.95f, -r * 1.72f, r * 1.45f, -r * 1.52f, r * 1.58f, -r * 0.78f)
+            cubicTo(r * 1.30f, -r * 1.10f, r * 0.98f, -r * 1.20f, r * 0.72f, -r * 1.08f)
+            close()
+        }
+        paint.style = Paint.Style.FILL
+        c.drawPath(blade, paint)
+        paint.color = Color.rgb(235, 237, 240)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = r * 0.025f
+        c.drawPath(blade, paint)
+        paint.style = Paint.Style.FILL
+
+        // Libro negro flotante con símbolo de calavera, a la izquierda.
+        c.save()
+        c.rotate(-24f, -r * 0.98f, -r * 0.72f)
+        paint.color = Color.rgb(12, 12, 14)
+        c.drawRoundRect(RectF(-r * 1.30f, -r * 1.02f, -r * 0.68f, -r * 0.40f), r * 0.08f, r * 0.08f, paint)
+        paint.color = Color.rgb(190, 193, 197)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = r * 0.025f
+        c.drawLine(-r * 0.61f, -r * 0.98f, -r * 0.61f, -r * 0.45f, paint)
+        paint.style = Paint.Style.FILL
+        paint.color = Color.rgb(225, 225, 225)
+        c.drawCircle(-r * 0.99f, -r * 0.75f, r * 0.13f, paint)
+        paint.color = Color.BLACK
+        c.drawCircle(-r * 1.03f, -r * 0.78f, r * 0.035f, paint)
+        c.drawCircle(-r * 0.95f, -r * 0.78f, r * 0.035f, paint)
+        c.drawRect(-r * 1.04f, -r * 0.72f, -r * 0.94f, -r * 0.68f, paint)
+        c.restore()
+
+        // Silueta de la capucha triangular y túnica.
+        paint.color = Color.BLACK
         val hood = Path().apply {
-            moveTo(0f, -r * 1.25f); cubicTo(-r * 0.7f, -r * 0.9f, -r * 1.0f, -r * 0.1f, -r * 0.7f, r * 0.45f)
-            cubicTo(-r * 0.55f, r * 0.95f, r * 0.55f, r * 0.95f, r * 0.7f, r * 0.45f)
-            cubicTo(r * 1.0f, -0.1f * r, r * 0.7f, -r * 0.9f, 0f, -r * 1.25f); close()
+            moveTo(0f, -r * 1.25f)
+            cubicTo(-r * 0.72f, -r * 0.98f, -r * 1.02f, -r * 0.12f, -r * 0.72f, r * 0.48f)
+            cubicTo(-r * 0.66f, r * 0.92f, -r * 0.42f, r * 1.24f, -r * 0.18f, r * 1.30f)
+            lineTo(r * 0.42f, r * 1.20f)
+            cubicTo(r * 0.78f, r * 0.88f, r * 0.85f, r * 0.28f, r * 0.70f, -r * 0.08f)
+            cubicTo(r * 0.55f, -r * 0.70f, r * 0.28f, -r * 1.05f, 0f, -r * 1.25f)
+            close()
         }
         c.drawPath(hood, paint)
-        paint.color = Color.WHITE
-        c.drawOval(RectF(-r * 0.52f, -r * 0.48f, r * 0.52f, r * 0.48f), paint)
-        paint.color = Color.BLACK
-        c.drawOval(RectF(-r * 0.42f, -r * 0.18f, -r * 0.08f, -r * 0.02f), paint)
-        c.drawOval(RectF(r * 0.08f, -r * 0.18f, r * 0.42f, -r * 0.02f), paint)
-        val grin = Path().apply { moveTo(-r*0.22f, r*0.20f); lineTo(-r*0.12f, r*0.36f); lineTo(0f, r*0.22f); lineTo(r*0.12f, r*0.36f); lineTo(r*0.22f, r*0.20f); close() }
-        c.drawPath(grin, paint)
+
+        // Pliegues sutiles de la túnica.
+        paint.color = Color.rgb(35, 36, 39)
+        val robeFold = Path().apply {
+            moveTo(-r * 0.50f, r * 0.40f)
+            cubicTo(-r * 0.42f, r * 0.72f, -r * 0.55f, r * 1.05f, -r * 0.18f, r * 1.30f)
+            cubicTo(-r * 0.06f, r * 0.92f, -r * 0.20f, r * 0.65f, -r * 0.16f, r * 0.48f)
+            close()
+        }
+        c.drawPath(robeFold, paint)
+
+        // Calavera sombreada, cuencas grandes y nariz triangular.
+        paint.color = if (night) Color.rgb(224, 225, 228) else Color.rgb(239, 239, 237)
+        c.drawOval(RectF(-r * 0.52f, -r * 0.54f, r * 0.52f, r * 0.45f), paint)
+        paint.color = Color.rgb(155, 158, 163)
+        c.drawOval(RectF(-r * 0.47f, -r * 0.43f, r * 0.47f, r * 0.28f), paint)
+        paint.color = Color.rgb(15, 15, 17)
+        c.drawOval(RectF(-r * 0.43f, -r * 0.20f, -r * 0.06f, r * 0.05f), paint)
+        c.drawOval(RectF(r * 0.06f, -r * 0.20f, r * 0.43f, r * 0.05f), paint)
+        val nose = Path().apply {
+            moveTo(0f, -r * 0.01f)
+            lineTo(-r * 0.09f, r * 0.17f)
+            lineTo(r * 0.08f, r * 0.17f)
+            close()
+        }
+        c.drawPath(nose, paint)
+        paint.color = Color.rgb(30, 30, 32)
+        c.drawRoundRect(RectF(-r * 0.23f, r * 0.25f, r * 0.23f, r * 0.36f), r * 0.025f, r * 0.025f, paint)
+        paint.color = Color.rgb(205, 207, 210)
+        paint.strokeWidth = r * 0.018f
+        for (i in -1..2) c.drawLine(i * r * 0.09f, r * 0.26f, i * r * 0.09f, r * 0.34f, paint)
+
+        // Brazos oscuros y taza gris con corazón negro.
+        paint.color = Color.rgb(18, 18, 20)
+        c.drawRoundRect(RectF(-r * 0.45f, r * 0.42f, r * 0.46f, r * 0.70f), r * 0.12f, r * 0.12f, paint)
+        paint.color = Color.rgb(174, 177, 182)
+        c.drawRoundRect(RectF(-r * 0.30f, r * 0.40f, r * 0.22f, r * 0.76f), r * 0.06f, r * 0.06f, paint)
+        c.drawRoundRect(RectF(r * 0.17f, r * 0.48f, r * 0.34f, r * 0.66f), r * 0.05f, r * 0.05f, paint)
+        paint.color = Color.rgb(18, 18, 20)
+        val heart = Path().apply {
+            moveTo(-r * 0.04f, r * 0.50f)
+            cubicTo(-r * 0.17f, r * 0.40f, -r * 0.22f, r * 0.57f, -r * 0.04f, r * 0.67f)
+            cubicTo(r * 0.14f, r * 0.57f, r * 0.09f, r * 0.40f, -r * 0.04f, r * 0.50f)
+            close()
+        }
+        c.drawPath(heart, paint)
+
+        // Vapor que sale de la taza.
+        paint.color = Color.argb(135, 210, 213, 218)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = r * 0.035f
+        val steam = Path().apply {
+            moveTo(-r * 0.12f, r * 0.37f)
+            cubicTo(-r * 0.28f, r * 0.23f, -r * 0.02f, r * 0.18f, -r * 0.14f, r * 0.05f)
+            moveTo(r * 0.02f, r * 0.37f)
+            cubicTo(-r * 0.08f, r * 0.25f, r * 0.18f, r * 0.20f, r * 0.08f, r * 0.08f)
+        }
+        c.drawPath(steam, paint)
+        paint.style = Paint.Style.FILL
+
         if (mood == 1) {
             paint.color = Color.YELLOW
-            c.drawCircle(r*0.58f, -r*0.8f, r*0.18f, paint)
+            c.drawCircle(r * 0.58f, -r * 0.8f, r * 0.18f, paint)
         }
         c.restore()
     }
