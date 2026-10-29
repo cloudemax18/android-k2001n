@@ -27,10 +27,10 @@ class AvatarView(context: Context) : View(context) {
         var action: String = "flotar", var actionUntil: Long = 0L,
         var phrase: String = "", var bubbleStart: Long = 0L, var bubbleUntil: Long = 0L,
         var facing: Float = 1f, var blinkUntil: Long = 0L, var nextBlink: Long = 0L,
-        var phase: Float = Random.nextFloat() * 6.28f
+        var phase: Float = Random.nextFloat() * 6.28f,\n        var nextActionAt: Long = 0L
     )
-    private val reaperActor = Actor(.29f, .61f, .00013f, .00008f, phrase = "¡Hola! Soy el Segador.")
-    private val ghostActor = Actor(.72f, .62f, -.00011f, -.00007f, phrase = "¡Hola! ¡Soy el Fantasma.")
+    private val reaperActor = Actor(.27f, .60f, .000018f, .000012f, phrase = "¡Hola! Soy el Segador.")
+    private val ghostActor = Actor(.73f, .63f, -.000016f, -.000011f, phrase = "¡Hola! Soy el Fantasma.")
     private val sayings = listOf(
         "¡Hola!", "¡Qué alegría!", "¡Vamos de paseo!", "¡Sorpresa!", "¡Abracadabra!",
         "¡Cuidado!", "¡Qué buen día!", "¡Estoy feliz!", "¡A correr!", "¡Mira esto!",
@@ -50,12 +50,12 @@ class AvatarView(context: Context) : View(context) {
 
     init {
         isClickable = true
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
         val now = System.currentTimeMillis()
         reaperActor.nextBlink = now + 1800
         ghostActor.nextBlink = now + 2600
-        showBubble(reaperActor, "¡Hola! Soy el Segador.", now, 4200)
-        showBubble(ghostActor, "¡Y yo soy el Fantasma!", now + 650, 4200)
+        reaperActor.nextActionAt = now + 4500\n        ghostActor.nextActionAt = now + 7000\n        showBubble(reaperActor, "¡Hola! Soy el Segador.", now, 6500)
+        showBubble(ghostActor, "¡Hola! Soy el Fantasma.", now + 1800, 6500)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -70,7 +70,7 @@ class AvatarView(context: Context) : View(context) {
 
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
         val night = hour >= 20 || hour < 6
-        val size = minOf(width * .39f, height * .78f).coerceAtLeast(100f)
+        val size = minOf(width * .35f, height * .68f).coerceAtLeast(100f)
         drawActor(canvas, reaperActor, reaper, size * 1.02f, now, night, true)
         drawActor(canvas, ghostActor, ghost, size * .80f, now, night, false)
 
@@ -86,17 +86,17 @@ class AvatarView(context: Context) : View(context) {
     }
 
     private fun updateActor(a: Actor, now: Long, dt: Long, minX: Float, maxX: Float) {
-        if (now >= a.actionUntil) {
-            if (Random.nextInt(100) < 3) {
-                a.action = actions.random()
-                a.actionUntil = now + Random.nextLong(900, 2400)
-                if (Random.nextInt(3) == 0) showBubble(a, sayings.random(), now, Random.nextLong(1900, 3400))
-            } else {
-                a.action = "flotar"
-                a.actionUntil = now + 700
-            }
+        if (now >= a.actionUntil) a.action = "flotar"
+        if (now >= a.nextActionAt) {
+            // Secuencia de acciones garantizadas y pausas largas para que cada reacción se aprecie.
+            a.action = listOf("saludar", "feliz", "saltar", "bailar", "magia", "asustado", "girar").random()
+            a.actionUntil = now + Random.nextLong(1800, 3200)
+            a.nextActionAt = a.actionUntil + Random.nextLong(3500, 6500)
+            if (Random.nextInt(100) < 72) showBubble(a, sayings.random(), now, Random.nextLong(5200, 7200))
         }
-        val speed = when (a.action) { "correr" -> 1.9f; "bailar" -> 1.5f; else -> 1f }
+        val speed = when (a.action) { "correr" -> 1.45f; "bailar" -> 1.18f; else -> 1f }
+        // Velocidad normalizada por segundo: movimiento suave, sin saltos entre los bordes.
+        val seconds = dt / 1000f
         a.x += a.vx * dt * speed
         a.y += a.vy * dt * speed
         if (a.x < minX || a.x > maxX) {
@@ -111,18 +111,18 @@ class AvatarView(context: Context) : View(context) {
         }
         // En los momentos tranquilos hay un paseo suave, no una imagen fija.
         if (a.action == "flotar" && Random.nextInt(90) == 0) {
-            a.vx = (Random.nextFloat() * .00015f + .00005f) * if (Random.nextBoolean()) 1 else -1
-            a.vy = (Random.nextFloat() * .00009f + .00003f) * if (Random.nextBoolean()) 1 else -1
+            a.vx = (Random.nextFloat() * .000012f + .000006f) * if (Random.nextBoolean()) 1 else -1
+            a.vy = (Random.nextFloat() * .000009f + .000004f) * if (Random.nextBoolean()) 1 else -1
         }
     }
 
     private fun drawActor(c: Canvas, a: Actor, bitmap: Bitmap?, size: Float, now: Long, night: Boolean, isReaper: Boolean) {
-        val bob = sin((now / 190.0) + a.phase).toFloat() * size * .035f
+        val bob = sin((now / 720.0) + a.phase).toFloat() * size * .045f
         val actionAngle = when (a.action) {
-            "bailar" -> sin(now / 90.0).toFloat() * 13f
-            "girar" -> sin(now / 130.0).toFloat() * 25f
-            "asustado" -> sin(now / 35.0).toFloat() * 4f
-            "saludar" -> sin(now / 85.0).toFloat() * 8f
+            "bailar" -> sin(now / 260.0).toFloat() * 13f
+            "girar" -> sin(now / 420.0).toFloat() * 25f
+            "asustado" -> sin(now / 140.0).toFloat() * 4f
+            "saludar" -> sin(now / 240.0).toFloat() * 8f
             else -> sin(now / 360.0 + a.phase).toFloat() * 3f
         }
         val scale = when (a.action) {
@@ -133,7 +133,7 @@ class AvatarView(context: Context) : View(context) {
             else -> 1f
         }
         val x = width * a.x
-        val y = height * a.y + bob + if (a.action == "saltar") -kotlin.math.abs(sin(now / 95.0).toFloat()) * size * .25f else 0f
+        val y = height * a.y + bob + if (a.action == "saltar") -kotlin.math.abs(sin(now / 250.0).toFloat()) * size * .25f else 0f
         val rect = RectF(-size * .50f, -size * .58f, size * .50f, size * .58f)
         c.save()
         c.translate(x, y)
@@ -173,14 +173,14 @@ class AvatarView(context: Context) : View(context) {
     private fun drawBubble(c: Canvas, x: Float, y: Float, a: Actor, now: Long, size: Float) {
         val elapsed = now - a.bubbleStart
         val remaining = a.bubbleUntil - now
-        val appear = (elapsed / 180f).coerceIn(0f, 1f)
+        val appear = (elapsed / 420f).coerceIn(0f, 1f)
         val fade = (remaining / 260f).coerceIn(0f, 1f)
         val alpha = (255 * minOf(appear, fade)).toInt()
-        val scale = .75f + .25f * appear
+        val scale = .86f + .14f * appear + sin(now / 420.0).toFloat() * .012f
         val textSize = (size * .115f).coerceIn(16f, 26f)
         p.textSize = textSize
         p.typeface = android.graphics.Typeface.create("sans-serif-medium", android.graphics.Typeface.NORMAL)
-        val visibleChars = if (elapsed < 600) (a.phrase.length * (elapsed / 600f)).toInt().coerceAtLeast(1) else a.phrase.length
+        val charsPerSecond = 14f\n        val visibleChars = (elapsed / 1000f * charsPerSecond).toInt().coerceAtLeast(1).coerceAtMost(a.phrase.length)
         val shown = a.phrase.take(visibleChars)
         val tw = p.measureText(a.phrase)
         val bw = (tw + 34f).coerceIn(150f, width * .72f)
@@ -250,14 +250,14 @@ class AvatarView(context: Context) : View(context) {
             val actor = if (event.x < width * .5f) reaperActor else ghostActor
             actor.action = listOf("feliz", "asustado", "saludar", "magia", "correr", "saltar", "bailar", "girar").random()
             actor.actionUntil = now + Random.nextLong(1600, 3000)
-            actor.vx = (Random.nextFloat() * .00025f + .0001f) * if (Random.nextBoolean()) 1 else -1
-            actor.vy = (Random.nextFloat() * .00015f + .00005f) * if (Random.nextBoolean()) 1 else -1
+            actor.vx = (Random.nextFloat() * .000018f + .000008f) * if (Random.nextBoolean()) 1 else -1
+            actor.vy = (Random.nextFloat() * .000012f + .000005f) * if (Random.nextBoolean()) 1 else -1
             showBubble(actor, listOf("¡Ja, me tocaste!", "¡Sorpresa!", "¡Mira mi magia!", "¡Qué alegría!", "¡A correr!", "¡Uy, qué susto!", "¡Vamos!", "¡Tachán!", "¡Lo hiciste!").random(), now, 2800)
             val other = if (actor === reaperActor) ghostActor else reaperActor
             if (Random.nextBoolean()) showBubble(other, listOf("¿Qué pasó?", "¡Yo también!", "¡Eh, espera!", "¡Qué divertido!").random(), now + 350, 2200)
             // Un toque también cambia el rumbo del paseo general.
-            globalVX = (Random.nextFloat() * .0002f + .00007f) * if (Random.nextBoolean()) 1 else -1
-            globalVY = (Random.nextFloat() * .00012f + .00004f) * if (Random.nextBoolean()) 1 else -1
+            globalVX = (Random.nextFloat() * .00006f + .000025f) * if (Random.nextBoolean()) 1 else -1
+            globalVY = (Random.nextFloat() * .00004f + .000015f) * if (Random.nextBoolean()) 1 else -1
             invalidate()
             return true
         }
