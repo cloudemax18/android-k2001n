@@ -1,4 +1,4 @@
-name: Build Gengar K2001N APK
+name: Build Phantom Companions APK
 on:
   push:
     branches: [gengar-floating-companion]
@@ -20,23 +20,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Download animated Pokémon sprites
-        run: |
-          mkdir -p app/src/main/res/raw
-          curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' \
-            https://img.pokemondb.net/sprites/black-white/anim/normal/gengar.gif \
-            --output app/src/main/res/raw/gengar.gif
-          curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' \
-            https://img.pokemondb.net/sprites/black-white/anim/normal/blastoise.gif \
-            --output app/src/main/res/raw/blastoise.gif
-          file app/src/main/res/raw/gengar.gif app/src/main/res/raw/blastoise.gif
+      - name: Prepare animation resources
+        run: mkdir -p app/src/main/res/raw
       - name: Build debug APK
         run: |
           gradle --no-daemon assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Gengar-K2001N.apk
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/Phantom-Companions.apk
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Gengar-K2001N
+          name: Phantom-Companions
           path: app/build/outputs/apk/debug/Gengar-K2001N.apk
           if-no-files-found: error
