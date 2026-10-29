@@ -29,8 +29,8 @@ class AvatarView(context: Context) : View(context) {
         var facing: Float = 1f, var blinkUntil: Long = 0L, var nextBlink: Long = 0L,
         var phase: Float = Random.nextFloat() * 6.28f
     )
-    private val reaperActor = Actor(.29f, .61f, .0013f, .0008f, phrase = "¡Hola! Soy el Segador.")
-    private val ghostActor = Actor(.72f, .62f, -.0011f, -.0007f, phrase = "¡Hola! ¡Soy el Fantasma.")
+    private val reaperActor = Actor(.29f, .61f, .00013f, .00008f, phrase = "¡Hola! Soy el Segador.")
+    private val ghostActor = Actor(.72f, .62f, -.00011f, -.00007f, phrase = "¡Hola! ¡Soy el Fantasma.")
     private val sayings = listOf(
         "¡Hola!", "¡Qué alegría!", "¡Vamos de paseo!", "¡Sorpresa!", "¡Abracadabra!",
         "¡Cuidado!", "¡Qué buen día!", "¡Estoy feliz!", "¡A correr!", "¡Mira esto!",
@@ -44,8 +44,8 @@ class AvatarView(context: Context) : View(context) {
     var onWindowPositionRequested: ((Float, Float) -> Unit)? = null
     private var globalX = .05f
     private var globalY = .08f
-    private var globalVX = .001f
-    private var globalVY = .0007f
+    private var globalVX = .00006f
+    private var globalVY = .00004f
     private var touchCount = 0
 
     init {
@@ -111,8 +111,8 @@ class AvatarView(context: Context) : View(context) {
         }
         // En los momentos tranquilos hay un paseo suave, no una imagen fija.
         if (a.action == "flotar" && Random.nextInt(90) == 0) {
-            a.vx = (Random.nextFloat() * .0015f + .0005f) * if (Random.nextBoolean()) 1 else -1
-            a.vy = (Random.nextFloat() * .0009f + .0003f) * if (Random.nextBoolean()) 1 else -1
+            a.vx = (Random.nextFloat() * .00015f + .00005f) * if (Random.nextBoolean()) 1 else -1
+            a.vy = (Random.nextFloat() * .00009f + .00003f) * if (Random.nextBoolean()) 1 else -1
         }
     }
 
@@ -250,14 +250,14 @@ class AvatarView(context: Context) : View(context) {
             val actor = if (event.x < width * .5f) reaperActor else ghostActor
             actor.action = listOf("feliz", "asustado", "saludar", "magia", "correr", "saltar", "bailar", "girar").random()
             actor.actionUntil = now + Random.nextLong(1600, 3000)
-            actor.vx = (Random.nextFloat() * .0025f + .001f) * if (Random.nextBoolean()) 1 else -1
-            actor.vy = (Random.nextFloat() * .0015f + .0005f) * if (Random.nextBoolean()) 1 else -1
+            actor.vx = (Random.nextFloat() * .00025f + .0001f) * if (Random.nextBoolean()) 1 else -1
+            actor.vy = (Random.nextFloat() * .00015f + .00005f) * if (Random.nextBoolean()) 1 else -1
             showBubble(actor, listOf("¡Ja, me tocaste!", "¡Sorpresa!", "¡Mira mi magia!", "¡Qué alegría!", "¡A correr!", "¡Uy, qué susto!", "¡Vamos!", "¡Tachán!", "¡Lo hiciste!").random(), now, 2800)
             val other = if (actor === reaperActor) ghostActor else reaperActor
             if (Random.nextBoolean()) showBubble(other, listOf("¿Qué pasó?", "¡Yo también!", "¡Eh, espera!", "¡Qué divertido!").random(), now + 350, 2200)
             // Un toque también cambia el rumbo del paseo general.
-            globalVX = (Random.nextFloat() * .002f + .0007f) * if (Random.nextBoolean()) 1 else -1
-            globalVY = (Random.nextFloat() * .0012f + .0004f) * if (Random.nextBoolean()) 1 else -1
+            globalVX = (Random.nextFloat() * .0002f + .00007f) * if (Random.nextBoolean()) 1 else -1
+            globalVY = (Random.nextFloat() * .00012f + .00004f) * if (Random.nextBoolean()) 1 else -1
             invalidate()
             return true
         }
