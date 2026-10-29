@@ -12,6 +12,7 @@ on:
       - "app/**"
       - ".github/workflows/build-apk.yml"
       - "gradle.properties"
+      - "assets/sprites_base64/**"
       - "settings.gradle.kts"
 
 permissions:
@@ -40,6 +41,12 @@ jobs:
           accept-android-sdk-licenses: true
       - name: Install Android SDK packages
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Restore transparent avatar images
+        run: |
+          mkdir -p app/src/main/res/drawable-nodpi
+          base64 --decode assets/sprites_base64/reaper_main.webp.b64 > app/src/main/res/drawable-nodpi/reaper_main.webp
+          base64 --decode assets/sprites_base64/ghost_main.webp.b64 > app/src/main/res/drawable-nodpi/ghost_main.webp
+          file app/src/main/res/drawable-nodpi/*.webp
       - name: Build debug APK
         run: gradle --no-daemon assembleDebug
       - name: Upload APK
