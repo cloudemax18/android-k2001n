@@ -6,10 +6,13 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Movie;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -211,6 +214,7 @@ public class GengarOverlayService extends Service implements LocationListener, S
         private boolean compact = false;
         private String bubble = "";
         private Movie sprite;
+        private Bitmap rangerSheet;
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         GhostView(Context c) {
@@ -223,7 +227,31 @@ public class GengarOverlayService extends Service implements LocationListener, S
             int resource = "blastoise".equals(pokemon) ? R.raw.blastoise : R.raw.gengar;
             try { sprite = Movie.decodeStream(getResources().openRawResource(resource)); }
             catch (Exception e) { sprite = null; }
+            rangerSheet = null;
+            if ("gengar".equals(pokemon)) {
+                try {
+                    Bitmap decoded = BitmapFactory.decodeStream(getResources().openRawResource(R.raw.gengar_ranger2));
+                    rangerSheet = removeCyanBackground(decoded);
+                } catch (Exception ignored) { rangerSheet = null; }
+            }
             invalidate();
+        }
+
+        private Bitmap removeCyanBackground(Bitmap source) {
+            if (source == null) return null;
+            Bitmap result = source.copy(Bitmap.Config.ARGB_8888, true);
+            int[] pixels = new int[result.getWidth() * result.getHeight()];
+            result.getPixels(pixels, 0, result.getWidth(), 0, 0, result.getWidth(), result.getHeight());
+            for (int i = 0; i < pixels.length; i++) {
+                int color = pixels[i];
+                int alpha = Color.alpha(color);
+                int red = Color.red(color), green = Color.green(color), blue = Color.blue(color);
+                if (alpha > 0 && red < 100 && green > 135 && blue > 135 && green - red > 45 && blue - red > 45) {
+                    pixels[i] = Color.TRANSPARENT;
+                }
+            }
+            result.setPixels(pixels, 0, result.getWidth(), 0, 0, result.getWidth(), result.getHeight());
+            return result;
         }
 
         void showBubble(String text) {
@@ -247,7 +275,26 @@ public class GengarOverlayService extends Service implements LocationListener, S
             else if ("boost".equals(state)) { scaleBoost = 1.10f + (float)Math.sin(now / 55.0) * 0.035f; bob -= 5f; }
             else if ("moving".equals(state)) { scaleBoost = 1f + (float)Math.sin(now / 180.0) * 0.025f; }
 
-            if (sprite != null) {
+            if (rangerSheet != null && "gengar".equals(activePokemon)) {
+                int row;
+                long frameDelay;
+                if ("moving".equals(state)) { row = 1; frameDelay = 95L; }
+                else if ("boost".equals(state)) { row = 1; frameDelay = 55L; }
+                else if ("braking".equals(state) || "turning".equals(state)) { row = 2; frameDelay = 110L; }
+                else { row = 0; frameDelay = 180L; }
+                int frame = (int)((now / frameDelay) % 8L);
+                if ("turning".equals(state)) frame = 7 - frame;
+                Rect src = new Rect(294 + frame * 32, 120 + row * 35, 324 + frame * 32, 152 + row * 35);
+                float availW = w - 12f, availH = h - (now < bubbleUntil ? 42f : 8f);
+                float size = Math.min(Math.min(availW, availH), 168f) * scaleBoost;
+                RectF dst = new RectF(-size / 2f, -size / 2f, size / 2f, size / 2f);
+                paint.setFilterBitmap(false);
+                c.save();
+                c.translate(w / 2f + shakeX, h / 2f + bob + (now < bubbleUntil ? 14f : 0f));
+                c.rotate(tilt);
+                c.drawBitmap(rangerSheet, src, dst, paint);
+                c.restore();
+            } else if (sprite != null) {
                 int duration = Math.max(1, sprite.duration());
                 sprite.setTime((int)(now % duration));
                 float availW = w - 12f, availH = h - (now < bubbleUntil ? 42f : 8f);
