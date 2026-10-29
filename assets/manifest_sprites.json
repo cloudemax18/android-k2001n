@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "language": "es",
+  "target_display": "1024x600",
+  "resources": {
+    "reaper_main": {
+      "android_resource": "reaper_main",
+      "path": "app/src/main/res/drawable-nodpi/reaper_main.png",
+      "format": "PNG RGBA",
+      "role": "Segador: capucha, calavera, guadaña, libro y taza con corazón"
+    },
+    "ghost_main": {
+      "android_resource": "ghost_main",
+      "path": "app/src/main/res/drawable-nodpi/ghost_main.png",
+      "format": "PNG RGBA",
+      "role": "Fantasma blanco con gafas negras y sonrisa"
+    }
+  },
+  "note": "Los PNG principales están en el paquete descargable de recursos. El atlas incluido es una referencia visual compuesta, no una hoja de fotogramas individuales validada para animación."
+}
