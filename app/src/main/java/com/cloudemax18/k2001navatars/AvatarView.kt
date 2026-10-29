@@ -22,13 +22,13 @@ class AvatarView(context: Context) : View(context) {
     private val phrases = listOf(
         "¡Hola, compañero!", "¡Vaya, vaya!", "¡En marcha!", "Lo he visto todo…",
         "¡Qué aventura!", "¡Soy increíble!", "¡Cuidado, fantasma!",
-        "¿Un cafecito?", "¡Abracadabra!", "¡Ahora vuelvo.",
+        "¿Un cafecito?", "¡Abracadabra!", "¡Ahora vuelvo!"
         "¡Qué buen día!", "¡No tengo miedo!", "¿Rodamos, jefe?",
         "¡Buenos días!", "¡Buenas tardes!", "¡Buenas noches!",
         "¡Qué susto!", "¡Estoy de buen humor!", "¡Hora de una siesta!",
         "¡Mira mi magia!", "¡Vamos de paseo!", "¡Eso ha sido genial!"
     )
-    private var phrase = "Salut, mon pote !"
+    private var phrase = "¡Hola! Soy el Segador."
     private var phraseUntil = System.currentTimeMillis() + 3500
     private var mood = 0
     private var reaperX = 0.24f
@@ -61,7 +61,7 @@ class AvatarView(context: Context) : View(context) {
         if (yFactor !in 0.48f..0.76f) vy = -vy
         if (ghostX !in 0.60f..0.86f) ghostX = if (ghostX < 0.60f) 0.86f else 0.60f
 
-        val hour = SimpleDateFormat("H", Locale.FRANCE).format(Date()).toIntOrNull() ?: 12
+        val hour = SimpleDateFormat("H", Locale.getDefault()).format(Date()).toIntOrNull() ?: 12
         val night = hour >= 20 || hour < 6
         val scale = if (width < height) 0.72f else 0.95f
         val cy = height * yFactor
