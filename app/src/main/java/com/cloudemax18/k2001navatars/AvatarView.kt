@@ -66,7 +66,7 @@ class AvatarView(context: Context) : View(context) {
         val scale = if (width < height) 0.72f else 0.95f
         val cy = height * yFactor
         val bob = kotlin.math.sin(tick / 12.0).toFloat() * height * 0.012f
-        drawReaper(canvas, width * reaperX, cy + bob, minOf(width, height) * 0.105f * scale, night)
+        drawReaper(canvas, width * reaperX, cy + bob, minOf(width, height) * 0.22f * scale, night)
         drawGhost(canvas, width * ghostX, cy - bob, minOf(width, height) * 0.105f * scale, night)
         drawBubble(canvas, width * 0.5f, height * 0.22f, width * 0.55f, phrase)
         postInvalidateDelayed(42)
