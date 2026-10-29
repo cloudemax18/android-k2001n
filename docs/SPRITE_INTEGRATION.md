@@ -1,21 +1,21 @@
 # Integración de recursos gráficos
 
-## Paquete preparado
+## Recursos principales incluidos en el flujo de compilación
 
-Se ha generado el paquete descargable `cheviexplorer_sprites_para_repo.zip`, con recursos principales WebP, atlas compacto, fotogramas PNG separados, manifiesto y frases en español.
+Los archivos WebP principales se guardan en el repositorio como Base64 para permitir su almacenamiento mediante la API de texto de GitHub:
 
-## Recursos Android
+- `assets/sprites_base64/reaper_main.webp.b64`
+- `assets/sprites_base64/ghost_main.webp.b64`
 
-Copia los archivos WebP de `app/src/main/res/drawable-nodpi/` del ZIP a la misma ruta del repositorio:
-- `reaper_main.webp`: Segador con capucha negra, calavera gris, guadaña curva, libro y taza con corazón.
-- `ghost_main.webp`: Fantasma blanco con gafas negras y sonrisa.
-- `avatar_sprites.webp`: atlas compacto para reacciones.
+El flujo `.github/workflows/build-apk.yml` decodifica estos recursos antes de ejecutar Gradle y los coloca en `app/src/main/res/drawable-nodpi/` con los nombres `reaper_main.webp` y `ghost_main.webp`. Android puede cargarlos como recursos drawable sin conversión adicional.
 
-`AvatarView.kt` busca los recursos por nombre y conserva los dibujos vectoriales como respaldo si no existen. El atlas usa celdas de 48 × 48 píxeles; se dibujan los fotogramas 0–6 para el Segador y 7–13 para el Fantasma.
+## Código
 
-## Estado de publicación
+`AvatarView.kt` busca los recursos `reaper_main` y `ghost_main`; si no existen, mantiene un dibujo vectorial de respaldo.
 
-Los archivos binarios del ZIP todavía no están confirmados dentro de la rama GitHub; este documento y el código de integración sí están versionados. No se debe considerar la APK final integrada con el arte hasta copiar los recursos, ejecutar la compilación y revisar el resultado en la radio K2001N.
+## Atlas y animaciones adicionales
+
+El atlas de expresiones, efectos y vehículos está preparado en el paquete de recursos de trabajo, pero todavía no está incluido como recurso binario en el flujo de compilación. No se debe afirmar que todas esas animaciones funcionan hasta que se incorpore el atlas y se pruebe cada estado.
 
 ## Idioma
 
@@ -23,9 +23,8 @@ Todo texto visible debe estar en español. No se permiten frases en francés ni 
 
 ## Pruebas necesarias
 
-1. Copiar los tres WebP a `app/src/main/res/drawable-nodpi/`.
-2. Ejecutar la compilación de depuración.
-3. Instalar la APK en la radio K2001N con pantalla 1024 × 600.
-4. Comprobar transparencia, escala y que el overlay no bloquee los controles.
-5. Validar cada reacción y movimiento en el dispositivo real.
-6. GPS, velocidad y sensores requieren permisos y pruebas específicas; no se simulan como datos reales.
+1. Confirmar que GitHub Actions reconstruye los dos WebP y compila la APK.
+2. Instalar la APK en la radio K2001N con pantalla 1024 × 600.
+3. Comprobar transparencia, escala, similitud con las referencias y que el overlay no bloquee controles.
+4. Validar cada reacción y movimiento en el dispositivo real.
+5. GPS, velocidad y sensores requieren permisos y pruebas específicas; no se simulan como datos reales.
