@@ -1,7 +1,7 @@
 # Encargo para Gemini — Dirección gráfica de los avatares flotantes K2001N
 
 ## Objetivo
-Diseñar los recursos gráficos originales y una guía de animación para una aplicación Android de avatares flotantes destinada a una radio de automóvil Android basada en K2001N (captura de referencia: pantalla 1024×600). Los dos personajes de referencia proporcionados por el usuario son: (1) un segador caricaturesco negro y blanco con capucha, calavera y libro; (2) un fantasma blanco 3D con gafas negras y sonrisa. Conservar la idea y los rasgos generales, pero producir ilustraciones originales, consistentes y utilizables en una app; no copiar marcas ni añadir texto incrustado en los dibujos.
+Diseñar los recursos gráficos originales y una guía de animación para una aplicación Android de avatares flotantes destinada a una radio de automóvil Android basada en K2001N (captura de referencia: pantalla 1024×600). Los dos personajes de referencia proporcionados por el usuario son: (1) el segador EXACTAMENTE basado en la imagen de referencia adjunta: cuerpo pequeño envuelto en túnica negra, capucha triangular y profunda, calavera gris/blanca con grandes cuencas oscuras tipo gafas, sosteniendo una taza gris con un corazón negro y vapor; una guadaña grande curvada detrás y un pequeño libro negro flotante a su lado; estética monocromática, brillante y caricaturesca. No sustituirlo por un segador genérico ni omitir la taza, la guadaña o el libro. (2) un fantasma blanco 3D con gafas negras y sonrisa. Mantener la identidad visual reconocible en todos los fotogramas. Conservar la idea y los rasgos generales, pero producir ilustraciones originales, consistentes y utilizables en una app; no copiar marcas ni añadir texto incrustado en los dibujos.
 
 ## Entregables obligatorios
 1. **Sprites PNG con transparencia**, sRGB, sin fondo, sin sombra exterior cortada, personaje completo y margen transparente suficiente:
@@ -15,7 +15,7 @@ Diseñar los recursos gráficos originales y una guía de animación para una ap
 5. No entregar PSD como único formato. PNG transparente es obligatorio.
 
 ## Dirección artística
-- Segador: silueta negra, capucha marcada, calavera blanca expresiva; lectura clara a 96–220 px de alto. Mantener el contraste alto y contornos limpios.
+- Segador: respetar la imagen de referencia adjunta como modelo principal, no como inspiración vaga. Conservar la capucha negra triangular, la calavera gris/blanca con cuencas oscuras grandes, la túnica negra, la taza gris con corazón negro y vapor, la guadaña curva alta detrás del personaje y el pequeño libro negro flotante con símbolo de calavera. Mantener la composición y los detalles identificadores al crear expresiones/acciones; los accesorios pueden animarse por separado, pero no desaparecer del diseño base. Lectura clara a 96–220 px de alto y contornos limpios.
 - Fantasma: blanco/perla, volumen suave 3D, gafas negras gruesas, sonrisa amistosa; separar visualmente del fondo oscuro con borde/contorno sutil.
 - Personalidad: cómica, simpática, traviesa; miedo y sorpresa deben ser exagerados, nunca terror gráfico.
 - Los dos personajes deben parecer de la misma colección, aunque uno sea ilustración monocroma y el otro 3D.
@@ -25,7 +25,7 @@ Diseñar los recursos gráficos originales y una guía de animación para una ap
 ## Restricciones de implementación
 - App Android nativa; pantalla de referencia 1024×600, pero soportar distintas densidades y orientación.
 - Animaciones por fotogramas, con bucles cortos y sin saltos al volver a la pose inicial.
-- No incluir texto en los sprites: las frases francesas se dibujan como burbujas nativas de Android.
+- Idioma obligatorio de toda la app: ESPAÑOL. Las frases aleatorias, saludos, reacciones, burbujas, instrucciones y mensajes de interfaz deben estar en español natural. No usar francés. No incluir texto en los sprites: las burbujas nativas de Android mostrarán las frases en español.
 - Evitar animaciones estroboscópicas, parpadeos rápidos o destellos intensos.
 - Los personajes no deben tapar controles críticos de la radio; sus tamaños y posiciones se podrán ajustar.
 - Entregar un ZIP `gemini_avatar_assets.zip` con estructura:
@@ -43,6 +43,7 @@ Diseñar los recursos gráficos originales y una guía de animación para una ap
     animation_manifest.json
     contact_sheet.png
   ```
+- Entregar los nombres de archivo y el manifest en inglés técnico, pero toda frase visible al usuario debe estar en español.
 - El JSON debe indicar para cada animación: `name`, `file`, `frameWidth`, `frameHeight`, `frames`, `frameDurationMs`, `loop`, `anchorX`, `anchorY`.
 
 ## Criterios de aceptación
@@ -54,4 +55,4 @@ Diseñar los recursos gráficos originales y una guía de animación para una ap
 - Antes de finalizar, comprobar visualmente cada archivo y corregir bordes, anatomía, gafas, capucha y calavera.
 
 ## Prompt de trabajo para Gemini
-Actúa como director de arte y animador 2D/3D para una app Android. Sigue todo este brief y prepara los recursos gráficos listos para producción. No afirmes haber creado un ZIP ni archivos descargables si tu interfaz no permite generarlos. Si no puedes producir todos los fotogramas en una sola respuesta, entrega primero las dos poses maestras y una hoja de expresiones, después las acciones por lotes, conservando exactamente el mismo diseño de personaje. Devuelve al final el inventario real de archivos producidos y cualquier limitación.
+Actúa como director de arte y animador 2D/3D para una app Android. Sigue todo este brief y prepara los recursos gráficos listos para producción. Prioridad máxima: el segador debe conservar los rasgos exactos de la imagen de referencia adjunta (capucha negra triangular, calavera gris/blanca con cuencas oscuras, taza con corazón y vapor, guadaña curva y libro negro flotante). Todo texto visible de la app debe estar en español; queda prohibido generar frases en francés. No afirmes haber creado un ZIP ni archivos descargables si tu interfaz no permite generarlos. Si no puedes producir todos los fotogramas en una sola respuesta, entrega primero las dos poses maestras y una hoja de expresiones, después las acciones por lotes, conservando exactamente el mismo diseño de personaje. Devuelve al final el inventario real de archivos producidos y cualquier limitación.
