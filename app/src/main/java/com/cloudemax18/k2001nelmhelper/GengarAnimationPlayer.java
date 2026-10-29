@@ -53,8 +53,8 @@ final class GengarAnimationPlayer {
         }
         sequences = parsed == null ? new JSONObject() : parsed.optJSONObject("sequences");
         if (sequences == null) {
-            // JSONObject is final in Android; an empty parsed object is sufficient.
-            throw new IllegalStateException("Invalid animation manifest");
+            // Keep the player unavailable so the legacy renderer can continue.
+            return;
         }
         play("idle");
     }
@@ -79,7 +79,7 @@ final class GengarAnimationPlayer {
         int duration = Math.max(30, spec.optInt("frameDurationMs", 150));
         boolean shouldLoop = spec.optBoolean("loop", false);
         ArrayList<Bitmap> decoded = new ArrayList<>();
-        for (int i = 1; i <= expectedFrames; i++) {
+        for (int i = 0; i < expectedFrames; i++) {
             Bitmap bitmap = loadFrame(path, i);
             if (bitmap != null) decoded.add(bitmap);
         }
@@ -129,6 +129,7 @@ final class GengarAnimationPlayer {
     private Bitmap loadFrame(String directory, int index) {
         String base = directory.endsWith("/") ? directory : directory + "/";
         String[] names = new String[] {
+            base + String.format(java.util.Locale.ROOT, "frame_%03d.png", index),
             base + String.format(java.util.Locale.ROOT, "%03d.png", index),
             base + String.format(java.util.Locale.ROOT, "%02d.png", index),
             base + index + ".png"
