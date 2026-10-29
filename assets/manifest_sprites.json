@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "idioma": "es",
+  "archivo_atlas": "app/src/main/res/drawable-nodpi/avatar_sprites.webp",
+  "formato": "WebP con transparencia",
+  "tamano_atlas_px": [
+    240,
+    192
+  ],
+  "celda_px": 48,
+  "columnas": 5,
+  "filas": 4,
+  "fotogramas": {
+    "segador": {
+      "andar": 0,
+      "neutral": 1,
+      "correr": [
+        2,
+        3,
+        4
+      ],
+      "sorpresa": 5,
+      "magia": 6
+    },
+    "fantasma": {
+      "neutral": [
+        7,
+        8
+      ],
+      "alegria": [
+        9,
+        10
+      ],
+      "guiño": 11,
+      "saludar": 12,
+      "fiesta": 13
+    },
+    "efectos": {
+      "corazon": 14,
+      "estrellas": 15
+    },
+    "vehiculos": {
+      "coche": 16,
+      "motocicleta": 17,
+      "lancha": 18
+    }
+  },
+  "nota": "Atlas de referencia compacto para animaciones. Las celdas se dibujan en la aplicación cuando mood es distinto de cero. Efectos y vehículos son recursos de referencia y aún requieren estados de animación específicos."
+}
