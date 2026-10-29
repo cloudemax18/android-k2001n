@@ -24,6 +24,7 @@ class AvatarView(context: Context) : View(context) {
     // Carga recursos PNG transparentes si existen; mantiene el dibujo vectorial como respaldo.
     private val reaperBitmap: Bitmap? by lazy { loadAvatarBitmap("reaper_main") }
     private val ghostBitmap: Bitmap? by lazy { loadAvatarBitmap("ghost_main") }
+    private val spriteSheet: Bitmap? by lazy { loadAvatarBitmap("avatar_sprites") }
     private val phrases = listOf(
         "¡Hola, compañero!", "¡Vaya, vaya!", "¡En marcha!", "Lo he visto todo…",
         "¡Qué aventura!", "¡Soy increíble!", "¡Cuidado, fantasma!",
@@ -74,20 +75,32 @@ class AvatarView(context: Context) : View(context) {
         val avatarSize = minOf(width, height) * 0.22f * scale
         val rx = width * reaperX
         val gx = width * ghostX
-        if (reaperBitmap != null) {
-            val rr = avatarSize * 1.42f
-            canvas.drawBitmap(reaperBitmap!!, null, RectF(rx - rr, cy + bob - rr, rx + rr, cy + bob + rr), paint)
+        val reaperRect = RectF(rx - avatarSize * 1.42f, cy + bob - avatarSize * 1.42f,
+            rx + avatarSize * 1.42f, cy + bob + avatarSize * 1.42f)
+        val ghostRect = RectF(gx - avatarSize * 1.28f, cy - bob - avatarSize * 1.28f,
+            gx + avatarSize * 1.28f, cy - bob + avatarSize * 1.28f)
+        val animatedMood = mood > 0 && tick % 5 != 0
+        if (animatedMood && spriteSheet != null) {
+            val reaperFrame = mood % 7
+            val ghostFrame = 7 + (mood % 7)
+            drawSpriteFrame(canvas, spriteSheet!!, reaperFrame, reaperRect)
+            drawSpriteFrame(canvas, spriteSheet!!, ghostFrame, ghostRect)
         } else {
-            drawReaper(canvas, rx, cy + bob, avatarSize, night)
-        }
-        if (ghostBitmap != null) {
-            val gr = avatarSize * 1.28f
-            canvas.drawBitmap(ghostBitmap!!, null, RectF(gx - gr, cy - bob - gr, gx + gr, cy - bob + gr), paint)
-        } else {
-            drawGhost(canvas, gx, cy - bob, avatarSize * 0.88f, night)
+            if (reaperBitmap != null) canvas.drawBitmap(reaperBitmap!!, null, reaperRect, paint)
+            else drawReaper(canvas, rx, cy + bob, avatarSize, night)
+            if (ghostBitmap != null) canvas.drawBitmap(ghostBitmap!!, null, ghostRect, paint)
+            else drawGhost(canvas, gx, cy - bob, avatarSize * 0.88f, night)
         }
         drawBubble(canvas, width * 0.5f, height * 0.22f, width * 0.55f, phrase)
         postInvalidateDelayed(42)
+    }
+
+    // Atlas: celdas de 96 px, cinco columnas. Fotogramas 0-6 Segador y 7-13 Fantasma.
+    private fun drawSpriteFrame(canvas: Canvas, sheet: Bitmap, index: Int, destination: RectF) {
+        val cell = 96
+        val source = android.graphics.Rect((index % 5) * cell, (index / 5) * cell,
+            (index % 5 + 1) * cell, (index / 5 + 1) * cell)
+        canvas.drawBitmap(sheet, source, destination, paint)
     }
 
     private fun loadAvatarBitmap(resourceName: String): Bitmap? {
