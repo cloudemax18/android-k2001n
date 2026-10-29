@@ -16,7 +16,7 @@ El flujo de GitHub Actions **Build Phantom Companions APK** compila la variante 
 4. Descarga el artefacto `Phantom-Companions`; contiene `Phantom-Companions.apk`.
 
 ## Animaciones de Gengar
-La superposición usa fotogramas de la hoja de sprites de **Gastly, Haunter & Gengar** de *Pokémon Ranger 2: Shadows of Almia* para variar las poses en reposo, movimiento, aceleración, frenado y giro. La hoja se descarga durante el flujo de compilación en `app/src/main/res/raw/gengar_ranger2.png`; no se guarda como binario en el repositorio.
+La superposición ya contiene la lógica para animar fotogramas de la hoja de sprites de **Gastly, Haunter & Gengar** de *Pokémon Ranger 2: Shadows of Almia* en reposo, movimiento, aceleración, frenado y giro. El flujo intenta descargarla como `app/src/main/res/raw/gengar_ranger2.png`; si el servidor bloquea la descarga, la aplicación conserva el GIF actual como alternativa. El archivo binario no está guardado en el repositorio todavía.
 
 Fuente del recurso: [The Spriters Resource — Gastly, Haunter & Gengar](https://www.spriters-resource.com/ds_dsi/pokemonranger2shadowsofalmia/asset/20008/). Recurso de terceros; consulta la página de origen para sus créditos y condiciones de uso.
 
