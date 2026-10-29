@@ -20,8 +20,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Prepare animation resources
-        run: mkdir -p app/src/main/res/raw
+      - name: Prepare legacy animation resources until migration is complete
+        run: |
+          mkdir -p app/src/main/res/raw
+          curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' https://img.pokemondb.net/sprites/black-white/anim/normal/gengar.gif --output app/src/main/res/raw/gengar.gif
+          curl --fail --location --retry 3 --user-agent 'Mozilla/5.0' https://img.pokemondb.net/sprites/black-white/anim/normal/blastoise.gif --output app/src/main/res/raw/blastoise.gif
       - name: Build debug APK
         run: |
           gradle --no-daemon assembleDebug
