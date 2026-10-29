@@ -54,9 +54,9 @@ class AvatarView(context: Context) : View(context) {
         reaperX += vx
         ghostX -= vx * .72f
         yFactor += vy
-        if (reaperX !in .12f.. .40f) vx = -vx
-        if (yFactor !in .48f.. .76f) vy = -vy
-        if (ghostX !in .60f.. .86f) ghostX = if (ghostX < .60f) .86f else .60f
+        if (reaperX !in 0.12f..0.40f) vx = -vx
+        if (yFactor !in 0.48f..0.76f) vy = -vy
+        if (ghostX !in 0.60f..0.86f) ghostX = if (ghostX < .60f) .86f else .60f
 
         val hour = SimpleDateFormat("H", Locale.FRANCE).format(Date()).toIntOrNull() ?: 12
         val night = hour >= 20 || hour < 6
