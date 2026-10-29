@@ -18,16 +18,16 @@ class AvatarOverlayService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         avatarView = AvatarView(this)
         val params = WindowManager.LayoutParams(
-            380,
-            280,
+            620,
+            460,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = 30
-            y = 90
+            x = 20
+            y = 60
         }
         try {
             windowManager?.addView(avatarView, params)
