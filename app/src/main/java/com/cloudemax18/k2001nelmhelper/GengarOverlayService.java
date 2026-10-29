@@ -215,11 +215,14 @@ public class GengarOverlayService extends Service implements LocationListener, S
         private String bubble = "";
         private Movie sprite;
         private Bitmap rangerSheet;
+        private GengarAnimationPlayer animationPlayer;
+        private long nextIdleVariationAt = 0L;
         private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 
         GhostView(Context c) {
             super(c);
             setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            try { animationPlayer = new GengarAnimationPlayer(c); } catch (Exception ignored) { animationPlayer = null; }
             setPokemon(activePokemon);
         }
 
@@ -228,6 +231,10 @@ public class GengarOverlayService extends Service implements LocationListener, S
             try { sprite = Movie.decodeStream(getResources().openRawResource(resource)); }
             catch (Exception e) { sprite = null; }
             rangerSheet = null;
+            if (animationPlayer != null && "gengar".equals(pokemon) && animationPlayer.hasSequence("idle")) {
+                animationPlayer.play("idle");
+                nextIdleVariationAt = System.currentTimeMillis() + 9000L;
+            }
             if ("gengar".equals(pokemon)) {
                 int sheetResource = getResources().getIdentifier("gengar_ranger2", "raw", getPackageName());
                 if (sheetResource != 0) {
@@ -278,7 +285,22 @@ public class GengarOverlayService extends Service implements LocationListener, S
             else if ("boost".equals(state)) { scaleBoost = 1.10f + (float)Math.sin(now / 55.0) * 0.035f; bob -= 5f; }
             else if ("moving".equals(state)) { scaleBoost = 1f + (float)Math.sin(now / 180.0) * 0.025f; }
 
-            if (rangerSheet != null && "gengar".equals(activePokemon)) {
+            if ("gengar".equals(activePokemon) && animationPlayer != null && animationPlayer.isAvailable()) {
+                if (animationPlayer.isFinished()) {
+                    animationPlayer.play("idle");
+                    nextIdleVariationAt = now + 9000L + random.nextInt(12000);
+                } else if ("idle".equals(animationPlayer.getCurrentName()) && now >= nextIdleVariationAt) {
+                    animationPlayer.playRandomIdleVariation();
+                    nextIdleVariationAt = now + 12000L + random.nextInt(18000);
+                }
+                float availW = w - 12f, availH = h - (now < bubbleUntil ? 42f : 8f);
+                float size = Math.min(Math.min(availW, availH), 168f) * scaleBoost;
+                RectF dst = new RectF((w-size)/2f + shakeX, (h-size)/2f + bob + (now < bubbleUntil ? 14f : 0f), (w+size)/2f + shakeX, (h+size)/2f + bob + (now < bubbleUntil ? 14f : 0f));
+                c.save();
+                c.rotate(tilt, w/2f + shakeX, h/2f + bob);
+                animationPlayer.draw(c, dst);
+                c.restore();
+            } else if (rangerSheet != null && "gengar".equals(activePokemon)) {
                 int row;
                 long frameDelay;
                 if ("moving".equals(state)) { row = 1; frameDelay = 95L; }
@@ -323,6 +345,11 @@ public class GengarOverlayService extends Service implements LocationListener, S
                 paint.setFakeBoldText(false);
             }
             postInvalidateDelayed(40);
+        }
+
+        @Override protected void onDetachedFromWindow() {
+            if (animationPlayer != null) animationPlayer.recycle();
+            super.onDetachedFromWindow();
         }
 
         @Override public boolean onTouchEvent(MotionEvent e) {
