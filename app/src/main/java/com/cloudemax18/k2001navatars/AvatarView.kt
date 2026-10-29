@@ -97,7 +97,7 @@ class AvatarView(context: Context) : View(context) {
 
     // Atlas: celdas de 96 px, cinco columnas. Fotogramas 0-6 Segador y 7-13 Fantasma.
     private fun drawSpriteFrame(canvas: Canvas, sheet: Bitmap, index: Int, destination: RectF) {
-        val cell = 96
+        val cell = 48
         val source = android.graphics.Rect((index % 5) * cell, (index / 5) * cell,
             (index % 5 + 1) * cell, (index / 5 + 1) * cell)
         canvas.drawBitmap(sheet, source, destination, paint)
