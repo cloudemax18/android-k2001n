@@ -1,6 +1,8 @@
 package com.cloudemax18.k2001navatars
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -18,7 +20,10 @@ import kotlin.random.Random
  * Todos los diálogos visibles para el usuario deben estar en español.
  */
 class AvatarView(context: Context) : View(context) {
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+    // Carga recursos PNG transparentes si existen; mantiene el dibujo vectorial como respaldo.
+    private val reaperBitmap: Bitmap? by lazy { loadAvatarBitmap("reaper_main") }
+    private val ghostBitmap: Bitmap? by lazy { loadAvatarBitmap("ghost_main") }
     private val phrases = listOf(
         "¡Hola, compañero!", "¡Vaya, vaya!", "¡En marcha!", "Lo he visto todo…",
         "¡Qué aventura!", "¡Soy increíble!", "¡Cuidado, fantasma!",
@@ -66,10 +71,31 @@ class AvatarView(context: Context) : View(context) {
         val scale = if (width < height) 0.72f else 0.95f
         val cy = height * yFactor
         val bob = kotlin.math.sin(tick / 12.0).toFloat() * height * 0.012f
-        drawReaper(canvas, width * reaperX, cy + bob, minOf(width, height) * 0.22f * scale, night)
-        drawGhost(canvas, width * ghostX, cy - bob, minOf(width, height) * 0.105f * scale, night)
+        val avatarSize = minOf(width, height) * 0.22f * scale
+        val rx = width * reaperX
+        val gx = width * ghostX
+        if (reaperBitmap != null) {
+            val rr = avatarSize * 1.42f
+            canvas.drawBitmap(reaperBitmap!!, null, RectF(rx - rr, cy + bob - rr, rx + rr, cy + bob + rr), paint)
+        } else {
+            drawReaper(canvas, rx, cy + bob, avatarSize, night)
+        }
+        if (ghostBitmap != null) {
+            val gr = avatarSize * 1.28f
+            canvas.drawBitmap(ghostBitmap!!, null, RectF(gx - gr, cy - bob - gr, gx + gr, cy - bob + gr), paint)
+        } else {
+            drawGhost(canvas, gx, cy - bob, avatarSize * 0.88f, night)
+        }
         drawBubble(canvas, width * 0.5f, height * 0.22f, width * 0.55f, phrase)
         postInvalidateDelayed(42)
+    }
+
+    private fun loadAvatarBitmap(resourceName: String): Bitmap? {
+        val resourceId = resources.getIdentifier(resourceName, "drawable", context.packageName)
+        if (resourceId == 0) return null
+        return runCatching {
+            BitmapFactory.decodeResource(resources, resourceId)
+        }.getOrNull()
     }
 
     private fun drawReaper(c: Canvas, x: Float, y: Float, r: Float, night: Boolean) {
