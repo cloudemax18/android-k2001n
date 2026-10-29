@@ -2,12 +2,12 @@
   "version": 1,
   "idioma": "es",
   "archivo_atlas": "app/src/main/res/drawable-nodpi/avatar_sprites.webp",
-  "formato": "WebP RGBA con transparencia",
+  "formato": "WebP con transparencia",
   "tamano_atlas_px": [
-    480,
-    384
+    240,
+    192
   ],
-  "celda_px": 96,
+  "celda_px": 48,
   "columnas": 5,
   "filas": 4,
   "fotogramas": {
@@ -45,5 +45,5 @@
       "lancha": 18
     }
   },
-  "nota": "Los fotogramas son recortes de un atlas de referencia. Las celdas de efectos y vehículos son referencias visuales; requieren validación visual en la radio antes de usarse como animaciones definitivas."
+  "nota": "Atlas de referencia compacto para animaciones. Las celdas se dibujan en la aplicación cuando mood es distinto de cero. Efectos y vehículos son recursos de referencia y aún requieren estados de animación específicos."
 }
