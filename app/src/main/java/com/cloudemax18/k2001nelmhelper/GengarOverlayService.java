@@ -229,10 +229,13 @@ public class GengarOverlayService extends Service implements LocationListener, S
             catch (Exception e) { sprite = null; }
             rangerSheet = null;
             if ("gengar".equals(pokemon)) {
-                try {
-                    Bitmap decoded = BitmapFactory.decodeStream(getResources().openRawResource(R.raw.gengar_ranger2));
-                    rangerSheet = removeCyanBackground(decoded);
-                } catch (Exception ignored) { rangerSheet = null; }
+                int sheetResource = getResources().getIdentifier("gengar_ranger2", "raw", getPackageName());
+                if (sheetResource != 0) {
+                    try {
+                        Bitmap decoded = BitmapFactory.decodeStream(getResources().openRawResource(sheetResource));
+                        rangerSheet = removeCyanBackground(decoded);
+                    } catch (Exception ignored) { rangerSheet = null; }
+                }
             }
             invalidate();
         }
