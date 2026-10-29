@@ -1,23 +1,31 @@
 # Integración de recursos gráficos
 
-## Recursos PNG principales
+## Paquete preparado
 
-El paquete `cheviexplorer_recursos_avatares.zip` contiene los PNG transparentes recortados del atlas generado:
-- `reaper_main.png`: Segador con capucha negra, calavera gris, guadaña curva, libro con calavera y taza con corazón.
-- `ghost_main.png`: Fantasma blanco perlado con gafas negras y sonrisa.
+Se ha generado el paquete descargable `cheviexplorer_sprites_para_repo.zip`, con recursos principales WebP, atlas compacto, fotogramas PNG separados, manifiesto y frases en español.
 
-Copia ambos archivos a `app/src/main/res/drawable-nodpi/`. `AvatarView.kt` busca los recursos por nombre y los dibuja a gran tamaño; si faltan, conserva el dibujo vectorial de respaldo.
+## Recursos Android
 
-## Alcance y precisión
+Copia los archivos WebP de `app/src/main/res/drawable-nodpi/` del ZIP a la misma ruta del repositorio:
+- `reaper_main.webp`: Segador con capucha negra, calavera gris, guadaña curva, libro y taza con corazón.
+- `ghost_main.webp`: Fantasma blanco con gafas negras y sonrisa.
+- `avatar_sprites.webp`: atlas compacto para reacciones.
 
-Los PNG principales son recursos estáticos y tienen canal alfa. El atlas completo incluido en el paquete sirve como referencia visual para expresiones, vehículos, efectos y burbujas; no debe confundirse con un conjunto de fotogramas independientes ya segmentados y validados. Las animaciones de cada acción deben implementarse y probarse por separado.
+`AvatarView.kt` busca los recursos por nombre y conserva los dibujos vectoriales como respaldo si no existen. El atlas usa celdas de 48 × 48 píxeles; se dibujan los fotogramas 0–6 para el Segador y 7–13 para el Fantasma.
 
-Todo el texto visible debe estar en español. No se permiten frases en francés ni otros idiomas en diálogos, etiquetas o mensajes.
+## Estado de publicación
+
+Los archivos binarios del ZIP todavía no están confirmados dentro de la rama GitHub; este documento y el código de integración sí están versionados. No se debe considerar la APK final integrada con el arte hasta copiar los recursos, ejecutar la compilación y revisar el resultado en la radio K2001N.
+
+## Idioma
+
+Todo texto visible debe estar en español. No se permiten frases en francés ni otros idiomas en diálogos, etiquetas o mensajes.
 
 ## Pruebas necesarias
 
-1. Confirmar que ambos PNG están en la carpeta indicada.
+1. Copiar los tres WebP a `app/src/main/res/drawable-nodpi/`.
 2. Ejecutar la compilación de depuración.
-3. Instalar la APK en la radio K2001N con pantalla 1024×600.
-4. Comprobar recorte, escala, transparencia y que el overlay no bloquee los controles.
-5. Verificar animaciones, permisos y sensores en el dispositivo real.
+3. Instalar la APK en la radio K2001N con pantalla 1024 × 600.
+4. Comprobar transparencia, escala y que el overlay no bloquee los controles.
+5. Validar cada reacción y movimiento en el dispositivo real.
+6. GPS, velocidad y sensores requieren permisos y pruebas específicas; no se simulan como datos reales.
