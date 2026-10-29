@@ -20,10 +20,13 @@ import kotlin.random.Random
 class AvatarView(context: Context) : View(context) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val phrases = listOf(
-        "Salut, mon pote !", "Oh là là !", "C'est parti !", "J'ai tout vu…",
-        "Quelle aventure !", "Je suis trop fort !", "Attention, fantôme !",
-        "Un petit café ?", "Abracadabra !", "Je reviens tout de suite !",
-        "Quelle belle journée !", "Même pas peur !", "On roule, chef ?"
+        "¡Hola, compañero!", "¡Vaya, vaya!", "¡En marcha!", "Lo he visto todo…",
+        "¡Qué aventura!", "¡Soy increíble!", "¡Cuidado, fantasma!",
+        "¿Un cafecito?", "¡Abracadabra!", "¡Ahora vuelvo.",
+        "¡Qué buen día!", "¡No tengo miedo!", "¿Rodamos, jefe?",
+        "¡Buenos días!", "¡Buenas tardes!", "¡Buenas noches!",
+        "¡Qué susto!", "¡Estoy de buen humor!", "¡Hora de una siesta!",
+        "¡Mira mi magia!", "¡Vamos de paseo!", "¡Eso ha sido genial!"
     )
     private var phrase = "Salut, mon pote !"
     private var phraseUntil = System.currentTimeMillis() + 3500
@@ -137,7 +140,7 @@ class AvatarView(context: Context) : View(context) {
         if (event.action == MotionEvent.ACTION_DOWN) {
             val now = System.currentTimeMillis()
             mood = Random.nextInt(0, 7)
-            phrase = listOf("Ah !", "Coucou !", "Tu m'as trouvé !", "Oh non !", "Youpi !", "Magie !", "Je cours !").random()
+            phrase = listOf("¡Ah!", "¡Hola!", "¡Me encontraste!", "¡Oh, no!", "¡Yupi!", "¡Magia!", "¡A correr!", "¡Qué alegría!", "¡Socorro!", "¡Sorpresa!").random()
             phraseUntil = now + 3500
             vx = (Random.nextFloat() * 0.008f + 0.002f) * if (Random.nextBoolean()) 1 else -1
             vy = (Random.nextFloat() * 0.004f + 0.001f) * if (Random.nextBoolean()) 1 else -1
