@@ -1,20 +1,49 @@
 {
-  "version": "1.0",
-  "language": "es",
-  "target_display": "1024x600",
-  "resources": {
-    "reaper_main": {
-      "android_resource": "reaper_main",
-      "path": "app/src/main/res/drawable-nodpi/reaper_main.png",
-      "format": "PNG RGBA",
-      "role": "Segador: capucha, calavera, guadaña, libro y taza con corazón"
+  "version": 1,
+  "idioma": "es",
+  "archivo_atlas": "app/src/main/res/drawable-nodpi/avatar_sprites.webp",
+  "formato": "WebP RGBA con transparencia",
+  "tamano_atlas_px": [
+    480,
+    384
+  ],
+  "celda_px": 96,
+  "columnas": 5,
+  "filas": 4,
+  "fotogramas": {
+    "segador": {
+      "andar": 0,
+      "neutral": 1,
+      "correr": [
+        2,
+        3,
+        4
+      ],
+      "sorpresa": 5,
+      "magia": 6
     },
-    "ghost_main": {
-      "android_resource": "ghost_main",
-      "path": "app/src/main/res/drawable-nodpi/ghost_main.png",
-      "format": "PNG RGBA",
-      "role": "Fantasma blanco con gafas negras y sonrisa"
+    "fantasma": {
+      "neutral": [
+        7,
+        8
+      ],
+      "alegria": [
+        9,
+        10
+      ],
+      "guiño": 11,
+      "saludar": 12,
+      "fiesta": 13
+    },
+    "efectos": {
+      "corazon": 14,
+      "estrellas": 15
+    },
+    "vehiculos": {
+      "coche": 16,
+      "motocicleta": 17,
+      "lancha": 18
     }
   },
-  "note": "Los PNG principales están en el paquete descargable de recursos. El atlas incluido es una referencia visual compuesta, no una hoja de fotogramas individuales validada para animación."
+  "nota": "Los fotogramas son recortes de un atlas de referencia. Las celdas de efectos y vehículos son referencias visuales; requieren validación visual en la radio antes de usarse como animaciones definitivas."
 }
